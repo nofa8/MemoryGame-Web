@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\TransactionResource;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 
 class TransactionController extends Controller
@@ -11,7 +13,7 @@ class TransactionController extends Controller
      */
     public function index()
     {
-        //
+        return TransactionResource::collection(Transaction::get());
     }
 
     /**
@@ -25,9 +27,9 @@ class TransactionController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Transaction $transaction)
     {
-        //
+        return new TransactionResource($transaction);
     }
 
     /**

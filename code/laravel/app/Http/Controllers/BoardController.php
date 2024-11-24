@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\BoardResource;
+use App\Models\Board;
 use Illuminate\Http\Request;
 
 class BoardController extends Controller
@@ -11,7 +13,7 @@ class BoardController extends Controller
      */
     public function index()
     {
-        //
+        return BoardResource::collection(Board::get());
     }
 
     /**
@@ -25,9 +27,9 @@ class BoardController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Board $board)
     {
-        //
+        return new BoardResource($board);
     }
 
     /**

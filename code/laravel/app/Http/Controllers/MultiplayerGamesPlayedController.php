@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\MultiplayerGamesPlayedResource;
+use App\Models\MultiplayerGamesPlayed;
 use Illuminate\Http\Request;
 
 class MultiplayerGamesPlayedController extends Controller
@@ -11,7 +13,7 @@ class MultiplayerGamesPlayedController extends Controller
      */
     public function index()
     {
-        //
+        return MultiplayerGamesPlayedResource::collection(MultiplayerGamesPlayed::get());
     }
 
     /**
@@ -25,9 +27,9 @@ class MultiplayerGamesPlayedController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(MultiplayerGamesPlayed $multi)
     {
-        //
+        return new MultiplayerGamesPlayedResource($multi);
     }
 
     /**
