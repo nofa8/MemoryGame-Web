@@ -12,7 +12,7 @@ class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
-
+//type – User type ('A' for administrator; 'P' for player), 
     /**
      * The attributes that are mass assignable.
      *

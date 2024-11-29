@@ -7,6 +7,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Transaction extends Model
 {
+    //– Type of transaction ('B' for bonus, 'P' for purchases, 'I' for internal spending/earnings
+    //related to a game
+
+
+    // – Game ID linked to the transaction (only applicable for type 'I')
+
+    // euros – Value of the purchase transaction (in euros; only applicable for type 'P').
     protected $fillable = [
         'transaction_datetime',
         'user_id',

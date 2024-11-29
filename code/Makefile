@@ -13,6 +13,18 @@ kubectl-update:
 	kubectl delete -f deployment
 	kubectl apply -f deployment
 
+all:
+	docker build -t registry.172.22.21.107.sslip.io/${GROUP}/api:v${VERSION} \
+	-f ./deployment/DockerfileLaravel ./laravel \
+	--build-arg GROUP=${GROUP}
+
+	docker build -t registry.172.22.21.107.sslip.io/${GROUP}/web:v${VERSION} -f ./deployment/DockerfileVue ./vue
+
+	docker build -t registry.172.22.21.107.sslip.io/${GROUP}/ws:v${VERSION} -f ./deployment/DockerfileWS ./websockets
+
+	docker push registry.172.22.21.107.sslip.io/${GROUP}/api:v${VERSION}
+	docker push registry.172.22.21.107.sslip.io/${GROUP}/web:v${VERSION}
+	docker push registry.172.22.21.107.sslip.io/${GROUP}/ws:v${VERSION}
 
 laravel-build:
 	docker build -t registry.172.22.21.107.sslip.io/${GROUP}/api:v${VERSION} \

@@ -9,6 +9,9 @@ use App\Models\MultiplayerGamesPlayed;
 
 class Game extends Model
 {
+
+//status – Game status ('PE' for pending, 'PL' for in progress, 'E' for ended, 'I' for interrupted)
+// – Date and time when the game ended (only when status = 'E', null for other statuses).
     protected $fillable = [
         'type',
         'status', 
@@ -18,6 +21,7 @@ class Game extends Model
         'began_at',
         'ended_at',
         'board_id',
+        'total_turns_winner'
     ];
 
     public function board() : BelongsTo

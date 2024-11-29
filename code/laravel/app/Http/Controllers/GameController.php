@@ -15,6 +15,13 @@ class GameController extends Controller
     {
         return GameResource::collection(Game::get());
     }
+    /**
+     * Display a listing of the resource without Unfinished Games.
+     */
+    public function indexFinished()
+    {
+        return GameResource::collection(Game::where('status', 'E')->get());
+    }
 
     /**
      * Store a newly created resource in storage.

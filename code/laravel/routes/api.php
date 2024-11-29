@@ -1,12 +1,18 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BoardController;
+use App\Http\Controllers\GameController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
 Route::post('/auth/login', [AuthController::class, "login"]);
+
+Route::get('/boards', [BoardController::class, "index"]);
+Route::get('/games', [GameController::class, "indexFinished"]);
+
 
 Route::middleware(['auth:sanctum'])->group(function () {
     // Route::get('/users/me', function (Request $request) {return $request->user();});
