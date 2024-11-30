@@ -20,7 +20,8 @@ class GameController extends Controller
      */
     public function indexFinished()
     {
-        return GameResource::collection(Game::where('status', 'E')->get());
+        $games = Game::where('status', 'E')->with(['creator', 'board'])->get();
+        return GameResource::collection($games);
     }
 
     /**
