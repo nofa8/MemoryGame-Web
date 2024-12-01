@@ -24,7 +24,7 @@ class GameResource extends JsonResource
             // 'winner' => $this->winner_id ,
             'start_time' => $this->began_at,
             'end_time' => $this->ended_at,
-            'board' => $this->board->board_cols."x".$this->board->board_rows,
+            'board' => $this->board_id,
             'turns' => $this->total_turns_winner ?? 100
         ];
     }

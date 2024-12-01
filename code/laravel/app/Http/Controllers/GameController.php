@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\GameRequest;
 use App\Http\Resources\GameResource;
 use App\Models\Game;
 use Illuminate\Http\Request;
@@ -20,16 +21,20 @@ class GameController extends Controller
      */
     public function indexFinished()
     {
-        $games = Game::where('status', 'E')->with(['creator', 'board'])->get();
+        $games = Game::where('status', 'E')->with(['creator'])->get();
         return GameResource::collection($games);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(GameRequest $request)
     {
-        //
+        $game = Game::create($request->validated());
+
+        return response()->json([
+            'message' => 'Game created successfully!'
+        ], 201);
     }
 
     /**
