@@ -20,11 +20,12 @@ class GameResource extends JsonResource
             'status' => $this->status, 
             'time' => $this->total_time, 
             'creator' => $this->created_user_id,
-            'winner' => $this->winner_id ,
+            'name' => $this->creator->name,
+            // 'winner' => $this->winner_id ,
             'start_time' => $this->began_at,
             'end_time' => $this->ended_at,
             'board' => $this->board_id,
-            'turns' => $this->total_turns_winner
+            'turns' => $this->total_turns_winner ?? 100
         ];
     }
 }
