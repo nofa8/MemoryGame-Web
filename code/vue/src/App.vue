@@ -14,10 +14,10 @@ import Toaster from './components/ui/toast/Toaster.vue';
             active-class="text-blue-600 font-semibold">
             Home
           </RouterLink>
-          <RouterLink to="/testers/laravel"
+          <RouterLink to="/login"
             class="text-gray-900 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
             active-class="text-blue-600 font-semibold">
-            Laravel Tester
+            Login
           </RouterLink>
           <RouterLink to="/testers/websocket"
             class="text-gray-900 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
