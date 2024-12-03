@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { Button } from '@/components/ui/button'
 import { useErrorStore } from '@/stores/error'
-
+import ErrorMessage from './common/ErrorMessage.vue'
 const authStore = useAuthStore()
 const storeError = useErrorStore()
 const email = ref('')
