@@ -4,6 +4,7 @@ import axios from 'axios'
 import { useErrorStore } from '@/stores/error'
 
 import avatarNoneAssetURL from '@/assets/avatar-none.png'
+import router from '@/router'
 
 export const useAuthStore = defineStore('auth', () => {
   const storeError = useErrorStore()
@@ -58,6 +59,7 @@ export const useAuthStore = defineStore('auth', () => {
       const responseUser = await axios.get('users/me')
       user.value = responseUser.data.data
       repeatRefreshToken()
+      router.push({ name: "singlePlayerGames" });
       return user.value
     } catch (e) {
       clearUser()

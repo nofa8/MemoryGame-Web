@@ -1,49 +1,50 @@
 <script setup>
-import { watch } from 'vue'
-import Cell from './Cell.vue'
-import { useTicTacToe } from './tictactoe.js'
+import { ref, computed, watch, onMounted } from 'vue'
+import Card from './Card.vue'
+import { useMemoryGame } from './memory'
 
-// these properties and methods are defined on the composable useTicTacToe
-// but can be used as if they were "directly" defined on this component
-// Note that the currentPlayer from the composable was "renamed" to player
-const {
-    status,
-    currentPlayer: player,
-    board,
-    start,
-    play
-} = useTicTacToe()
+const props = defineProps({
+  rows: {
+    type: Number,
+    default: 3
+  },
+  cols: {
+    type: Number,
+    default: 4
+  }
+})
 
-const emit = defineEmits(['playerChanged', 'statusChanged'])
+const { status, board, moves, matchedPairs, start, play, gameEnded } = useMemoryGame(
+  props.cols * props.rows
+)
 
-const playPieceOfBoard = (idx) => {
-    play(idx)
+const emit = defineEmits(['statusChanged'])
+
+const gridClasses = computed(() => `grid grid-cols-[${props.rows}] gap-2`)
+
+const flip = (index) => {
+  play(index)
 }
-
-watch(
-    player,
-    (newValue) => {
-        emit('playerChanged', newValue)
-    }
-)
-
-watch(
-    status,
-    (newValue) => {
-        emit('statusChanged', newValue)
-    }
-)
+watch(status, (newValue) => {
+  emit('statusChanged', newValue)
+})
 
 defineExpose({
-    start
+  start
 })
 </script>
 
 <template>
-    <div class="grid grid-cols-3 border divide-y divide-x">
-        <Cell v-for="(piece, idx) in board" :key="idx" 
-                :piece="piece" :index="idx" 
-                @play="playPieceOfBoard">
-        </Cell>
-    </div>
+  <div :class="gridClasses" class="border">
+    <Card
+      v-for="(card, idx) in board"
+      :key="idx"
+      :piece="card.value"
+      :index="idx"
+      :is-flipped="card.isFlipped"
+      :is-matched="card.isMatched"
+      @flip="flip"
+    >
+    </Card>
+  </div>
 </template>
