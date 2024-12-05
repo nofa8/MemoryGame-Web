@@ -20,7 +20,7 @@ const { status, board, moves, matchedPairs, start, play, gameEnded } = useMemory
 
 const emit = defineEmits(['statusChanged'])
 
-const gridClasses = computed(() => `grid grid-cols-[${props.rows}] gap-2`)
+const gridClasses = computed(() => `grid grid-cols-[${props.cols}] gap-2`)
 
 const flip = (index) => {
   play(index)

@@ -14,14 +14,7 @@ class GameController extends Controller
      */
     public function index()
     {
-        return GameResource::collection(Game::get());
-    }
-    /**
-     * Display a listing of the resource without Unfinished Games.
-     */
-    public function indexFinished()
-    {
-        $games = Game::where('status', 'E')->with(['creator'])->get();
+        $games = Game::where('status', 'E')->with(['creator'])->take(10)->get();
         return GameResource::collection($games);
     }
 
@@ -53,11 +46,11 @@ class GameController extends Controller
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
+    // /**
+    //  * Remove the specified resource from storage.
+    //  */
+    // public function destroy(string $id)
+    // {
+    //     //
+    // }
 }
