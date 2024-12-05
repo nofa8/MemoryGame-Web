@@ -4,6 +4,10 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+<<<<<<< Updated upstream
+=======
+use Illuminate\Database\Eloquent\Relations\HasMany;
+>>>>>>> Stashed changes
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -50,6 +54,24 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'blocked' => 'boolean',
         ];
+    }
+    public function createdGames(): HasMany
+    {
+        return $this->hasMany(Game::class, 'created_user_id');
+    }
+    public function gamesWon(): HasMany
+    {
+        return $this->hasMany(Game::class, 'winner_user_id');
+    }
+    public function multiplayerGamesPlayed(): HasMany
+    {
+        return $this->hasMany(MultiplayerGamesPlayed::class);
+    }
+
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class);
     }
 }
