@@ -7,14 +7,10 @@ export function useMemoryGame(board_rows = 4, board_cols = 3) {
   // Game under way -> 0
   // Ended-> 1
   const board = ref([])
-  let currentPlayer = ref(1)
+  // let currentPlayer = ref(1)
   const flippedCards = ref([])
   const matchedPairs = ref([])
   const moves = ref(0)
-
-  const gameEnded = computed(() => {
-    return matchedPairs.value == boardSize / 2 ? true : false
-  })
 
   // Create card pairs
   const createCardPairs = () => {
@@ -56,7 +52,7 @@ export function useMemoryGame(board_rows = 4, board_cols = 3) {
 
   // Flip a card
   const play = (index) => {
-    if (status === '1' || board.value[index].isMatched || flippedCards.value.length >= 2) {
+    if (status.value === '1' || board.value[index].isMatched || flippedCards.value.length >= 2) {
       return false
     }
 
@@ -114,8 +110,6 @@ export function useMemoryGame(board_rows = 4, board_cols = 3) {
     moves,
     matchedPairs,
     start,
-    play,
-    gameEnded,
-    currentPlayer
+    play
   }
 }

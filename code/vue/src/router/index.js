@@ -24,7 +24,7 @@ const router = createRouter({
       component: Login
     },
     {
-      path: '/game/',
+      path: '/game',
       name: 'game',
       component: Board
     },

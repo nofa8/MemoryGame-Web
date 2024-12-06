@@ -9,10 +9,12 @@ const flipCard = () => {
 </script>
 
 <template>
-  <img
-    v-if="props.isFlipped || props.isMatched"
-    :src="`./cards/${props.piece}.png`"
-    alt="Card image"
-  />
-  <img v-else @click="flipCard" :src="`/cards/semFace.png`" alt="Card back" />
+  <div class="grow">
+    <img
+      v-if="props.isFlipped || props.isMatched"
+      :src="`./cards/${props.piece}.png`"
+      alt="Card image"
+    />
+    <img v-else @click="flipCard" :src="`/cards/semFace.png`" alt="Card back" />
+  </div>
 </template>
