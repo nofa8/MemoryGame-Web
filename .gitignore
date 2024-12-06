@@ -132,3 +132,5 @@ dist
 
 docs/.vitepress/dist
 docs/.vitepress/cache
+code/vue/package-lock.json
+code/websockets/package-lock.json
