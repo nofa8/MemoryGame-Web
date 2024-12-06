@@ -1,5 +1,5 @@
 <script setup>
-import { inject, provide, useTemplateRef } from 'vue'
+import { inject, onMounted, provide, ref, useTemplateRef } from 'vue'
 import Toaster from './components/ui/toast/Toaster.vue'
 import { useAuthStore } from './stores/auth'
 import { useChatStore } from './stores/chat'
@@ -9,6 +9,21 @@ import GlobalInputDialog from './components/common/GlobalInputDialog.vue'
 const storeAuth = useAuthStore()
 const storeChat = useChatStore()
 const socket = inject('socket')
+
+const ambientSound = new Audio('/ambient-timestrech.mp3')
+ambientSound.loop = true
+const isMusicPlaying = ref(false)
+
+const firstTime = ref(true)
+
+const toggleMusic = () => {
+  if (isMusicPlaying.value) {
+    ambientSound.pause()
+  } else {
+    ambientSound.play()
+  }
+  isMusicPlaying.value = !isMusicPlaying.value // Toggle the state
+}
 
 const alertDialog = useTemplateRef('alert-dialog')
 provide('alertDialog', alertDialog)
@@ -48,6 +63,18 @@ socket.on('privateMessage', (messageObj) => {
 const handleMessageFromInputDialog = (message) => {
   storeChat.sendPrivateMessageToUser(userDestination, message)
 }
+
+onMounted(() => {
+  document.addEventListener('click', () => {
+    // Play the ambient sound only if it isn't already playing
+    if (firstTime.value && !isMusicPlaying.value) {
+      ambientSound.play()
+      firstTime.value = false
+      isMusicPlaying.value = true
+      console.log('Ambient music started!')
+    }
+  })
+})
 </script>
 
 <template>
@@ -65,6 +92,45 @@ const handleMessageFromInputDialog = (message) => {
         <img src="/logo.png" alt="Memory Game Logo" class="w-12 h-12 rounded-full shadow-md" />
         <h1 class="text-3xl font-bold tracking-wide">Memory Game</h1>
       </div>
+
+      <!-- Music Icon -->
+      <button @click="toggleMusic" class="flex items-center space-x-2 text-white">
+        <span v-if="isMusicPlaying">
+          <!-- Playing Icon -->
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            class="w-6 h-6"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+        </span>
+        <span v-else>
+          <!-- Pause Icon -->
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            class="w-6 h-6"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </span>
+        <span>Music</span>
+      </button>
       <p class="text-lg">
         <span v-if="storeAuth.user">
           Welcome, {{ storeAuth.userFirstLastName }}

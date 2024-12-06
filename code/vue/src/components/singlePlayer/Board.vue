@@ -8,14 +8,14 @@ import { useAuthStore } from '@/stores/auth'
 import { useErrorStore } from '@/stores/error'
 import axios from 'axios'
 import { useMemoryGame } from './memory'
-import { useCounterStore } from '@/stores/counter'
 import CardComponent from './CardComponent.vue'
 
 const storeAuth = useAuthStore()
 const storeError = useErrorStore()
-const storeTurns = useCounterStore()
 const route = useRoute()
 const router = useRouter()
+
+const leavingSound = new Audio('/leaving.mp3')
 
 const game_id = ref(null)
 const rows = ref(0)
@@ -26,7 +26,10 @@ game_id.value = route.query?.game_id ?? null
 rows.value = route.query?.board_rows ?? 4
 cols.value = route.query?.board_cols ?? 3
 
-const { status, board, moves, matchedPairs, start, play } = useMemoryGame(rows.value, cols.value)
+const { status, board, moves, matchedPairs, streak, bestStreak, start, play } = useMemoryGame(
+  rows.value,
+  cols.value
+)
 
 const alertDialog = inject('alertDialog')
 const autoStart = true
@@ -43,7 +46,6 @@ const turns = computed(() => {
 })
 const flip = (index) => {
   play(index)
-  storeTurns.increment()
   if (!stopWorking.value) {
     stopwatch.start()
   }
@@ -67,12 +69,6 @@ watch(status, (newValue) => {
 
     if (storeAuth.user != null) {
       try {
-        /*const payload = {
-        created_user_id: storeAuth.user.id,
-        type: 'S',
-        board_id: board.id,
-        status: 'E'
-        };*/
         const payload = {
           status: 'E',
           turns: moves.value
@@ -140,8 +136,12 @@ const gridClasses = computed(() => {
 onBeforeRouteLeave((to, from, next) => {
   // Check if the game is still in progress and if status is not 1
   const isItLeaving = () => {
+    leavingSound.play()
     leaving.value = true
-    next()
+
+    setTimeout(() => {
+      next()
+    }, 1000)
   }
   if (status.value !== '1') {
     stopwatch.pause()
@@ -181,6 +181,14 @@ start()
             </p>
             <p class="text-lg sm:text-xl text-gray-800 dark:text-gray-300">
               📋 Moves: <span class="font-semibold text-black dark:text-white">{{ turns }}</span>
+            </p>
+            <p class="text-lg sm:text-xl text-gray-800 dark:text-gray-300">
+              🔥 Current Streak:
+              <span class="font-semibold text-black dark:text-white">{{ streak }}</span>
+            </p>
+            <p class="text-lg sm:text-xl text-gray-800 dark:text-gray-300">
+              🏆 Best Streak:
+              <span class="font-semibold text-black dark:text-white">{{ bestStreak }}</span>
             </p>
           </div>
         </div>
