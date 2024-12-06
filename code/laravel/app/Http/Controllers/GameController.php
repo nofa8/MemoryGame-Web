@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\GameRequest;
 use App\Http\Resources\GameResource;
+use App\Http\Resources\HistoryResource;
 use App\Models\Game;
 use Illuminate\Http\Request;
 
@@ -25,6 +26,36 @@ class GameController extends Controller
         return GameResource::collection($games);
     }
 
+    public function indexHistory(Request $request)
+    {
+        $userId = $request->user()->id;
+
+        if ($request->user()->type == 'A') {
+            $games = Game::with(['creator', 'winner', 'board', 'multiplayerGamesPlayed.user'])
+                ->orderBy('began_at', 'desc')
+                ->paginate(10);
+        } else {
+            $games = Game::where('created_user_id', $userId)
+                ->orWhereHas('multiplayerGamesPlayed', function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                })
+                ->with(['creator', 'winner', 'board', 'multiplayerGamesPlayed.user'])
+                ->orderBy('began_at', 'desc')
+                ->paginate(10);
+        }
+
+        return response()->json([
+            'data' => HistoryResource::collection($games),
+            'meta' => [
+                'current_page' => $games->currentPage(),
+                'from' => $games->firstItem(),
+                'last_page' => $games->lastPage(),
+                'per_page' => $games->perPage(),
+                'to' => $games->lastItem(),
+                'total' => $games->total(),
+            ]
+        ]);
+    }
     /**
      * Store a newly created resource in storage.
      */

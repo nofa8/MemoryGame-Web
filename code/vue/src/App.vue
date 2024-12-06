@@ -95,6 +95,13 @@ const handleMessageFromInputDialog = (message) => {
         >
           Profile
         </RouterLink>
+        <RouterLink
+          :to="{ name: 'history' }"
+          class="px-6 py-3 rounded-md text-white bg-red-600 hover:bg-red-700 transition-all shadow-md"
+          active-class="bg-red-800 hover:bg-red-800"
+        >
+          History
+        </RouterLink>
       </div>
 
       <div class="flex items-center space-x-4">
