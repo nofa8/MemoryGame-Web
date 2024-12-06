@@ -11,6 +11,7 @@ use App\Models\MultiplayerGamesPlayed;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class MultiplayerGamesPlayedController extends Controller
 {
@@ -75,6 +76,139 @@ class MultiplayerGamesPlayedController extends Controller
         return new MultiGamesResource($game);
     }
 
+    /**
+     * Create a new multiplayer game.
+     */
+    public function create(Request $request)
+    {
+        $user = $request->user();
+
+        // Validate the request
+        $request->validate([
+            'board_id' => 'required|exists:boards,id',
+            'max_players' => 'required|integer|min:2|max:10', // Adjust max as needed
+        ]);
+
+        // Check if user has enough brain coins
+        if ($user->brain_coins < 5) {
+            return response()->json(['error' => 'Insufficient brain coins to create a game.'], 403);
+        }
+
+        // Deduct brain coins
+        $user->decrement('brain_coins', 5);
+
+        // Create the game
+        $game = MultiplayerGamesPlayed::create([
+            'board_id' => $request->board_id,
+            'created_user_id' => $user->id,
+            'max_players' => $request->max_players,
+            'status' => 'PE', // Pending
+        ]);
+
+        return response()->json(['message' => 'Game created successfully.', 'game' => $game]);
+    }
+
+    /**
+     * Join an existing multiplayer game.
+     */
+    public function join(Request $request)
+    {
+        $user = $request->user();
+        // Check if user has enough brain coins
+        if ($user->brain_coins < 5) {
+            return response()->json(['error' => 'Insufficient brain coins to join a game.'], 403);
+        }
+        // Validate the request
+        $request->validate([
+            'game_id' => 'required|exists:multiplayer_games,id',
+        ]);
+
+        $game = MultiplayerGamesPlayed::find($request->game_id);
+
+        // Check if game is pending
+        if ($game->status !== 'PE') {
+            return response()->json(['error' => 'This game is not available to join.'], 403);
+        }
+
+        if ($game->players()->where('user_id', $user->id)->exists()) {
+            return response()->json(['error' => 'You have already joined this game.'], 403);
+        }
+
+        // Check if the game has space
+        if ($game->players()->count() >= $game->max_players) {
+            return response()->json(['error' => 'This game is full.'], 403);
+        }
+
+
+
+        // Deduct brain coins and add player to the game
+        $user->decrement('brain_coins', 5);
+        $game->players()->attach($user->id);
+
+        return response()->json(['message' => 'Joined the game successfully.', 'game' => $game]);
+    }
+
+    /**
+     * End the game with winner data.
+     */
+    public function end(Request $request)
+    {
+        $request->validate([
+            'game_id' => 'required|exists:multiplayer_games,id',
+            'winner_id' => 'required|exists:users,id',
+        ]);
+
+        $game = MultiplayerGamesPlayed::find($request->game_id);
+
+        // Check if game is in progress
+        if ($game->status !== 'PL') {
+            return response()->json(['error' => 'This game is not in progress.'], 403);
+        }
+
+        // Mark game as ended
+        $game->update([
+            'status' => 'E',
+            'ended_at' => now(),
+            'winner_user_id' => $request->winner_id,
+        ]);
+
+        // Calculate and distribute rewards
+        $totalBrainCoins = $game->players()->count() * 5;
+        $platformFee = 3;
+        $reward = $totalBrainCoins - $platformFee;
+
+        $winner = User::find($request->winner_id);
+        $winner->increment('brain_coins', $reward);
+
+        return response()->json(['message' => 'Game ended successfully.', 'reward' => $reward]);
+    }
+
+
+    /**
+     * Fetch a list of pending games in the lobby.
+     */
+    public function lobby()
+    {
+        $games = MultiplayerGamesPlayed::where('status', 'PE')
+            ->with('players') // Load players for each game
+            ->get();
+
+        return response()->json(['games' => $games]);
+    }
+
+    /**
+     * Fetch multiplayer game history for the user.
+     */
+    public function history()
+    {
+        $user = Auth::user();
+
+        $games = MultiplayerGamesPlayed::whereHas('players', function ($query) use ($user) {
+            $query->where('user_id', $user->id);
+        })->with('players')->get();
+
+        return response()->json(['games' => $games]);
+    }
 
     /**
      * Display the specified resource.

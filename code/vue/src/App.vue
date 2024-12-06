@@ -16,9 +16,6 @@ provide('alertDialog', alertDialog)
 const inputDialog = useTemplateRef('input-dialog')
 provide('inputDialog', inputDialog)
 
-const alert_dialog_nice = useTemplateRef('alert-dialog-nice')
-provide('alert_dialog_nice', alert_dialog_nice)
-
 const logoutConfirmed = () => {
   storeAuth.logout()
 }
@@ -56,7 +53,6 @@ const handleMessageFromInputDialog = (message) => {
 <template>
   <Toaster />
   <GlobalAlertDialog ref="alert-dialog"></GlobalAlertDialog>
-  <GlobalAlertDialog class="alert-dialog" ref="alert-dialog-nice"></GlobalAlertDialog>
 
   <GlobalInputDialog ref="input-dialog"></GlobalInputDialog>
 
@@ -70,9 +66,16 @@ const handleMessageFromInputDialog = (message) => {
         <h1 class="text-3xl font-bold tracking-wide">Memory Game</h1>
       </div>
       <p class="text-lg">
-        {{
-          storeAuth.user ? 'Welcome, ' + storeAuth.userFirstLastName : 'Ready to test your memory?'
-        }}
+        <span v-if="storeAuth.user">
+          Welcome, {{ storeAuth.userFirstLastName }}
+          <img
+            v-if="storeAuth.user.userPhotoUrl"
+            :src="storeAuth.user.userPhotoUrl"
+            alt="User Photo"
+            class="rounded-full w-8 h-8 ml-2"
+          />
+        </span>
+        <span v-else> Ready to test your memory? </span>
       </p>
     </header>
 
@@ -133,25 +136,5 @@ body {
   background: linear-gradient(to bottom, #f0f4f8, #cfd9df);
   color: #1f2937;
   font-family: 'Inter', sans-serif;
-}
-
-.alert-dialog {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.8); /* Dark background with opacity */
-  color: white;
-  font-family: 'Arial', sans-serif;
-  z-index: 9999; /* Ensure it stays on top of everything */
-  opacity: 0;
-  visibility: hidden;
-  transition:
-    opacity 0.3s ease,
-    visibility 0.3s ease;
 }
 </style>

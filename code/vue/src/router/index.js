@@ -1,9 +1,9 @@
-import HomeComponent from '@/components/HomeComponent.vue'
 import Login from '@/components/Login.vue'
 import MultiPlayerGames from '@/components/multiPlayer/MultiPlayerGames.vue'
 import Board from '@/components/singlePlayer/Board.vue'
 import SinglePlayerGame from '@/components/singlePlayer/SinglePlayerGame.vue'
 import WebSocketTester from '@/components/WebSocketTester.vue'
+import { useAuthStore } from '@/stores/auth'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -36,4 +36,17 @@ const router = createRouter({
   ]
 })
 
+let firstTime = true
+
+router.beforeEach(async (to, from, next) => {
+  const storeAuth = useAuthStore()
+
+  if (firstTime) {
+    await storeAuth.restoreLogin()
+    firstTime = false
+
+  }
+  
+  next()
+})
 export default router

@@ -43,7 +43,6 @@ export const useAuthStore = defineStore('auth', () => {
     return avatarNoneAssetURL
   })
 
-  // This function is "private" - not exported by the store
   const clearUser = () => {
     resetIntervalToRefreshToken()
     user.value = null
@@ -55,6 +54,8 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const responseLogin = await axios.post('auth/login', credentials)
       token.value = responseLogin.data.token
+      // To keep the token for next time 
+      localStorage.setItem('token', token.value)
       axios.defaults.headers.common.Authorization = 'Bearer ' + token.value
       const responseUser = await axios.get('users/me')
       user.value = responseUser.data.data
@@ -127,6 +128,24 @@ export const useAuthStore = defineStore('auth', () => {
     return intervalToRefreshToken
   }
 
+  const restoreLogin = async function () {
+    let storedToken = localStorage.getItem('token')
+        if (storedToken) {
+            try {
+                token.value = storedToken
+                axios.defaults.headers.common.Authorization = 'Bearer ' + token.value
+                const responseUser = await axios.get('users/me')
+                user.value = responseUser.data.data
+                repeatRefreshToken()
+                return true
+            } catch {
+                clearUser()
+                return false
+            }
+    }
+    return false
+}
+
   return {
     user,
     userName,
@@ -136,6 +155,7 @@ export const useAuthStore = defineStore('auth', () => {
     userGender,
     userPhotoUrl,
     login,
-    logout
+    logout,
+    restoreLogin
   }
 })

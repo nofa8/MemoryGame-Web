@@ -1,12 +1,12 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { inject } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import { Card as CardCard } from '@/components/ui/card'
 import { useStopwatch } from 'vue-timer-hook'
 import { useAuthStore } from '@/stores/auth'
 import { useErrorStore } from '@/stores/error'
-// import axios from 'axios'
+import axios from 'axios'
 import { useMemoryGame } from './memory'
 import { useCounterStore } from '@/stores/counter'
 import CardComponent from './CardComponent.vue'
@@ -20,18 +20,15 @@ const router = useRouter()
 const game_id = ref(null)
 const rows = ref(0)
 const cols = ref(0)
-const lastMoveDone = ref(0)
+const lastAction = ref(0)
+const leaving = ref(false)
 game_id.value = route.query?.game_id ?? null
 rows.value = route.query?.board_rows ?? 4
 cols.value = route.query?.board_cols ?? 3
 
-const gameInterrupted = computed(() => {
-  return showSeconds.value - lastMoveDone.value >= 20
-})
-// currentPlayer
 const { status, board, moves, matchedPairs, start, play } = useMemoryGame(rows.value, cols.value)
 
-const alertDialog = inject('alert_dialog_nice')
+const alertDialog = inject('alertDialog')
 const autoStart = true
 const stopwatch = useStopwatch(autoStart)
 
@@ -39,103 +36,127 @@ const showSeconds = computed(() => {
   return stopwatch.seconds.value + 60 * stopwatch.minutes.value
 })
 
+const stopWorking = ref(true)
+
 const turns = computed(() => {
   return moves
 })
 const flip = (index) => {
   play(index)
   storeTurns.increment()
+  if (!stopWorking.value) {
+    stopwatch.start()
+  }
+  lastAction.value = showSeconds.value
 }
+
+const mainPage = () => {
+  router.push({ name: 'singlePlayerGames' })
+}
+
 watch(status, (newValue) => {
   if (newValue === '1') {
     stopwatch.pause()
     alertDialog.value.open(
-      router.push({ name: 'singlePlayerGames' }),
+      mainPage,
       'Game Won!',
       'Exit',
       'Next',
       `The game has ended! 🏆\n\nWould you like to go to the game selecter and challenge yourself again, or exit the game?\n\nYour choice will determine your next step!` // Description text
     )
 
-    // if (storeAuth.user != null) {
-    //   try {
-    //     /*const payload = {
-    //     created_user_id: storeAuth.user.id,
-    //     type: 'S',
-    //     board_id: board.id,
-    //     status: 'E'
-    //     };*/
-    //     const payload = {
-    //       status: 'E'
-    //     }
-    //     console.log(game_id.value)
-    //     const response = axios.put(`/games/${game_id.value}`, payload).then((response) => {
-    //       //console.log(response.data.data)
-    //       //fazer update das coins visualmente
-    //       router.push({ name: 'gameMode' })
-    //       /* fazer aqui o depois
+    if (storeAuth.user != null) {
+      try {
+        /*const payload = {
+        created_user_id: storeAuth.user.id,
+        type: 'S',
+        board_id: board.id,
+        status: 'E'
+        };*/
+        const payload = {
+          status: 'E',
+          turns: moves.value
+        }
 
-    //         isLoading.value = false
-    //         return response*/
-    //     })
-    //   } catch (e) {
-    //     console.log(e)
-    //     storeError.setErrorMessages(
-    //       e.response.data.message,
-    //       e.response.data.errors,
-    //       e.response.status,
-    //       'Getting Games Error!'
-    //     )
-    //   }
-    // }
+        const response = axios.put(`/games/${game_id.value}`, payload).then((response) => {
+          //console.log(response.data.data)
+          //fazer update das coins visualmente
+          router.push({ name: 'singlePlayerGames' })
+          /* fazer aqui o depois
+
+            isLoading.value = false
+            return response*/
+        })
+      } catch (e) {
+        console.log(e)
+        storeError.setErrorMessages(
+          e.response.data.message,
+          e.response.data.errors,
+          e.response.status,
+          'Getting Games Error!'
+        )
+      }
+    }
   }
 })
 
-watch(gameInterrupted, (newValue) => {
+watch(leaving, (newValue) => {
   if (newValue === true) {
-    stopwatch.pause()
-    // alertDialog.value.open(
-    //   goToGamehistory,
-    //   'Are you sure?',
-    //   'Cancel',
+    if (storeAuth.user != null) {
+      try {
+        const payload = {
+          status: 'I'
+        }
 
-    // )
-
-    // if (storeAuth.user != null) {
-    //   try {
-    //     /*const payload = {
-    //     created_user_id: storeAuth.user.id,
-    //     type: 'S',
-    //     board_id: board.id,
-    //     status: 'E'
-    //     };*/
-    //     const payload = {
-    //       status: 'I'
-    //     }
-    //     console.log(game_id.value)
-    //     const response = axios.put(`/games/${game_id.value}`, payload).then((response) => {
-    //       //console.log(response.data.data)
-    //       //fazer update das coins visualmente
-    //       router.push({ name: 'gameMode' })
-    //       /* fazer aqui o depois
-
-    //         isLoading.value = false
-    //         return response*/
-    //     })
-    //   } catch (e) {
-    //     console.log(e)
-    //     storeError.setErrorMessages(
-    //       e.response.data.message,
-    //       e.response.data.errors,
-    //       e.response.status,
-    //       'Getting Games Error!'
-    //     )
-    //   }
-    // }
+        const response = axios.put(`/games/${game_id.value}`, payload).then((response) => {
+          //update visual do necessário
+        })
+      } catch (e) {
+        console.log(e)
+        storeError.setErrorMessages(
+          e.response.data.message,
+          e.response.data.errors,
+          e.response.status,
+          'Getting Games Error!'
+        )
+      }
+    } else {
+      stopwatch.start()
+    }
   }
 })
 
-const gridClasses = computed(() => `grid grid-cols-${cols.value}`)
+// Incrível dor de cabeça pois o grid-cols-${cols.value} não é possível por causa de o tailwind não suportar grids dinâmicos
+const gridClasses = computed(() => {
+  const columnMap = {
+    3: 'grid-cols-3',
+    4: 'grid-cols-4',
+    6: 'grid-cols-6'
+  }
+  return columnMap[cols.value] || 'grid-cols-3' // Default fallback
+})
+
+// beforeRouteLeave Guard to handle navigation when game is in progress
+onBeforeRouteLeave((to, from, next) => {
+  // Check if the game is still in progress and if status is not 1
+  const isItLeaving = () => {
+    leaving.value = true
+    next()
+  }
+  if (status.value !== '1') {
+    stopwatch.pause()
+    stopWorking.value = false
+    alertDialog.value.open(
+      isItLeaving, // Callback to proceed with navigation if user clicks 'Quit'
+      'Do you want to quit?', // Title of the dialog
+      'Continue', // Label for the button to continue the game
+      'Quit', // Label for the button to quit the game
+      '⚠️ Your game is still in progress! 🚧 Leaving now will interrupt your progress, and the game will be lost. ❓ Are you sure you want to exit?' // Alert description
+    )
+  } else {
+    next() // Proceed with the navigation if game is finished
+  }
+})
 
 start()
 </script>
@@ -165,8 +186,8 @@ start()
         </div>
 
         <!-- Game Grid Section -->
-        <div class="flex justify-center items-center mt-6">
-          <div :class="gridClasses" class="grid gap-2 sm:gap-4 p-2 sm:p-4">
+        <div class="grid justify-center items-center mt-6 w-full">
+          <div :class="['grid', gridClasses, 'gap-2 sm:gap-4 p-2 sm:p-4', 'w-full']">
             <CardComponent
               v-for="(card, idx) in board"
               :key="idx"

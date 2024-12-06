@@ -17,7 +17,7 @@ const isLoading = ref(false)
 const boardsStore = useBoardsStore()
 boardsStore.loadBoards()
 
-const startGame = (board) => {
+const startGame = async (board) => {
   isLoading.value = true
   try {
     if (!storeAuth.user) {
@@ -31,9 +31,9 @@ const startGame = (board) => {
       board_id: board.id
     }
 
-    const response = axios.post('/games', payload)
+    const response = await axios.post('/games', payload)
     const gameData = response.data.data
-
+    
     router.push({
       name: 'game',
       query: {
@@ -54,8 +54,8 @@ const startGame = (board) => {
   }
 }
 
-const checkAvailableBoards = (board) => {
-  return (board.cols === 3 && board.rows) || storeAuth.user || storeAuth.balance >= 1
+const checkAccessBoard = (board) => {
+  return (board.cols === 3) || (storeAuth.user && storeAuth.user.brain_coins_balance  >= 1)
 }
 </script>
 
@@ -91,18 +91,18 @@ const checkAvailableBoards = (board) => {
               :key="board.id"
               class="relative group flex flex-col items-center justify-center p-6 rounded-lg cursor-pointer transition-all transform hover:scale-105 shadow-md"
               :class="
-                checkAvailableBoards(board)
+                checkAccessBoard(board)
                   ? 'bg-blue-500 text-white'
                   : 'bg-gray-400 text-gray-700 cursor-not-allowed'
               "
-              @click="checkAvailableBoards(board) && startGame(board)"
+              @click="checkAccessBoard(board) && startGame(board)"
             >
               <h2 class="text-lg font-bold mb-2">Board: {{ board.cols }} x {{ board.rows }}</h2>
-              <p v-if="!checkAvailableBoards(board)" class="text-sm italic">Unavailable</p>
+              <p v-if="!checkAccessBoard(board)" class="text-sm italic">Unavailable</p>
 
               <!-- Lock Icon for Unavailable Boards -->
               <svg
-                v-if="!checkAvailableBoards(board)"
+                v-if="!checkAccessBoard(board)"
                 xmlns="http://www.w3.org/2000/svg"
                 class="absolute bottom-4 right-4 h-6 w-6 fill-current text-gray-200 opacity-50 group-hover:opacity-75"
                 viewBox="0 -960 960 960"
