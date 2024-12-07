@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreGameRequest;
+use App\Http\Requests\StoreMultiGameRequest;
 use App\Http\Resources\GameResource;
 use App\Http\Resources\MultiGamesResource;
 use App\Http\Resources\MultiplayerGamesPlayedResource;
@@ -12,6 +13,7 @@ use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class MultiplayerGamesPlayedController extends Controller
 {
@@ -19,7 +21,7 @@ class MultiplayerGamesPlayedController extends Controller
      * Display a listing of the resource.
      */
     public function index(Request $request)
-    {
+    { 
         if ($request->user()->type == 'A') {
             return GameResource::collection(Game::where('type', 'M')->paginate(10));
         } else {
@@ -31,7 +33,7 @@ class MultiplayerGamesPlayedController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreGameRequest $request)
+    public function store(StoreMultiGameRequest $request)
     {
 
         $validated = $request->validated();
@@ -42,21 +44,32 @@ class MultiplayerGamesPlayedController extends Controller
                 'message' => 'Invalid game type'
             ], 400);
         }
+
+
+
         $user = User::findOrFail($validated['created_user_id']);
+        $joined = User::findOrFail($validated['joined_user_id']);
         if ($user->brain_coins_balance < 5) {
             return response()->json([
                 'message' => 'User needs to have 5 brain coins to play a Multi player game'
             ], 400);
         }
 
+        if ($joined->brain_coins_balance < 5) {
+            return response()->json([
+                'message' => 'Joined user needs to have 5 brain coins to play a Multi player game'
+            ], 400);
+        }
+
         $game = new Game();
         $game->fill($validated);
-        $game->status = 'PE';
+        $game->status = 'PL';
         $game->began_at = now();
         $game->ended_at = null;
         $user->brain_coins_balance -= 5;
-
-        if ($game->save() && $user->save()) {
+        $joined->brain_coins_balance -= 5;
+        if ($game->save() && $user->save() && $joined->save()) {
+            
 
             $transaction = new Transaction();
             $transaction->user_id = $user->id;
@@ -65,6 +78,14 @@ class MultiplayerGamesPlayedController extends Controller
             $transaction->type = 'I';
             $transaction->transaction_datetime = now();
             $transaction->save();
+
+            $joinedTransaction = new Transaction();
+            $joinedTransaction->user_id = $joined->id;
+            $joinedTransaction->game_id = $game->id;
+            $joinedTransaction->brain_coins = -5;
+            $joinedTransaction->type = 'I';
+            $joinedTransaction->transaction_datetime = now();
+            $joinedTransaction->save();
         }
 
         $multiplayerGame = new MultiplayerGamesPlayed();
@@ -73,7 +94,16 @@ class MultiplayerGamesPlayedController extends Controller
         $multiplayerGame->game_id = $game->id;
         $multiplayerGame->save();
 
-        return new MultiGamesResource($game);
+        $joinedMultiplayerGame = new MultiplayerGamesPlayed();
+
+        $joinedMultiplayerGame->user_id = $joined->id;
+        $joinedMultiplayerGame->game_id = $game->id;
+        $joinedMultiplayerGame->save();
+        $wow = new MultiGamesResource($game);
+        // Log::info('MultiGamesResource content:', $wow->toArray(request()));
+
+
+        return $wow;
     }
 
     /**

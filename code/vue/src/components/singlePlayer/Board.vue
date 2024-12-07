@@ -1,5 +1,6 @@
+//Board
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeMount, onBeforeUnmount } from 'vue'
 import { inject } from 'vue'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import { Card as CardCard } from '@/components/ui/card'
@@ -39,6 +40,15 @@ const showSeconds = computed(() => {
   return stopwatch.seconds.value + 60 * stopwatch.minutes.value
 })
 
+const dynamicBackground = computed(() => {
+  const intensity = Math.max(0, 255 - streak.value * 40); // Adjust the multiplier for desired sensitivity
+  const redColor = `rgba(255, ${intensity}, ${intensity}, 1)`;
+  const middleColor = `rgba(255, 255, 255, 1)`; // White at the center
+
+  return `linear-gradient(to right, ${redColor}, ${middleColor}, ${redColor})`;
+});
+
+
 const stopWorking = ref(true)
 
 const turns = computed(() => {
@@ -52,7 +62,7 @@ const flip = (index) => {
   lastAction.value = showSeconds.value
 }
 
-const mainPage = () => {
+const mainPage = function () {
   router.push({ name: 'singlePlayerGames' })
 }
 
@@ -76,12 +86,7 @@ watch(status, (newValue) => {
 
         const response = axios.put(`/games/${game_id.value}`, payload).then((response) => {
           //console.log(response.data.data)
-          //fazer update das coins visualmente
-          router.push({ name: 'singlePlayerGames' })
-          /* fazer aqui o depois
-
-            isLoading.value = false
-            return response*/
+          //update visual do necessário
         })
       } catch (e) {
         console.log(e)
@@ -158,10 +163,35 @@ onBeforeRouteLeave((to, from, next) => {
   }
 })
 
+const handleBeforeUnload = (event) => {
+  // Only trigger the PUT request if the user is still playing
+  if (status.value == '0') {
+    try {
+      leaving.value = true
+    } catch (error) {
+      console.error('Error quitting the game on tab close:', error)
+    }
+  }
+}
+
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', handleBeforeUnload)
+})
+
+// Add event listener for beforeunload
+window.addEventListener('beforeunload', handleBeforeUnload)
+
+
+
+
 start()
 </script>
 <template>
-  <div class="flex justify-center items-center min-h-screen p-4 bg-gray-50 dark:bg-gray-900">
+  <div
+    class="flex justify-center items-center min-h-screen p-4 "
+    
+  >
+  <!-- Fire here please-->
     <CardCard
       class="w-full max-w-6xl mx-auto h-auto rounded-lg bg-white dark:bg-gray-800 border-0 shadow-md p-6"
     >
@@ -195,7 +225,14 @@ start()
 
         <!-- Game Grid Section -->
         <div class="grid justify-center items-center mt-6 w-full">
-          <div :class="['grid', gridClasses, 'gap-2 sm:gap-4 p-2 sm:p-4', 'w-full']">
+          <div
+            :class="[
+              'grid',
+              gridClasses,
+              'gap-2 sm:gap-4 lg:gap-6 p-2 sm:p-4',
+              'w-full'
+            ]"
+          >
             <CardComponent
               v-for="(card, idx) in board"
               :key="idx"
@@ -208,15 +245,6 @@ start()
             />
           </div>
         </div>
-
-        <!-- Restart Button -->
-        <!-- <div class="mt-6">
-          <button
-            class="w-full sm:w-auto py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md transition duration-300"
-          >
-            Restart Game
-          </button>
-        </div> -->
       </div>
     </CardCard>
   </div>

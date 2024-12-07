@@ -1,53 +1,75 @@
-<!-- <script setup>
-const props = defineProps(['piece', 'index'])
-const emit = defineEmits(['playPieceOfBoard'])
-
-const play = () => {
-  emit('playPieceOfBoard', props.index)
-}
-</script>
-
-<template>
-  <div class="grow">
-    <img
-      :src="'img/' + piece + '.png'"
-      alt="Tictactoe piece"
-      class="w-full h-full"
-      @click.prevent="play"
-    />
-  </div>
-</template> -->
-
 <script setup>
-const props = defineProps(['piece', 'index', 'isFlipped', 'isMatched'])
-const emit = defineEmits(['flip'])
+const props = defineProps(['piece', 'index', 'isFlipped', 'isMatched']);
+const emit = defineEmits(['flip']);
+
+// Audio for card flip
+const flipSound = new Audio('/flip.mp3');
+flipSound.preload = 'auto';
 
 const flipCard = () => {
   // Emit the flip event only if the card is not already flipped or matched
   if (!props.isFlipped && !props.isMatched) {
-    emit('flip', props.index)
+    flipSound.play(); // Play the flip sound
+    emit('flip', props.index);
   }
 }
 </script>
 
 <template>
-  <div class="grow">
+  <div class="card" @click="flipCard">
     <div
-      class="relative w-full h-full bg-gray-200 rounded-lg shadow-lg flex items-center justify-center cursor-pointer"
-      @click="flipCard"
+      :class="[
+        'card-inner',
+        { 'is-flipped': props.isFlipped || props.isMatched }
+      ]"
     >
-      <img
-        v-if="isFlipped || isMatched"
-        :src="`/cards/${piece}.png`"
-        alt="Card image"
-        class="w-full h-full object-cover rounded-lg"
-      />
-      <div
-        v-else
-        class="absolute inset-0 bg-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-xl"
-      >
-        ?
+      <!-- Front of the card -->
+      <div class="card-front">
+        <img :src="`./cards/${props.piece}.png`" alt="Card image" />
+      </div>
+
+      <!-- Back of the card -->
+      <div class="card-back">
+        <img src="/cards/semFace.png" alt="Card back" />
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.card {
+  perspective: 1000px; /* Enable 3D effect */
+  width: 100px;
+  height: 150px;
+  cursor: pointer;
+}
+
+.card-inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s ease-in-out;
+}
+
+.card-inner.is-flipped {
+  transform: rotateY(180deg); /* Flip the card */
+}
+
+.card-front,
+.card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden; /* Hide the back side */
+  border-radius: 8px; /* Optional: Add rounded corners */
+}
+
+.card-front {
+  transform: rotateY(180deg); /* Make the front face hidden initially */
+}
+
+.card-back {
+  background-color: #ccc; /* Optional: Customize back face color */
+}
+</style>

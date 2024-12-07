@@ -19,24 +19,12 @@ class MultiGamesResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'created' => $this?->creator?->nickname ?? 'Unknown User',
-            'winner' => $this?->winner?->nickname ?? 'Unknown User',
-            'type' => $this->type,
+            'player1' => $this?->creator ?? 'Unknown User',
             'status' => $this->status,
-            'began_at' => $this->began_at,
-            'ended_at' => $this->ended_at,
-            'total_time' => $this->total_time,
-            'board_id' => new BoardResource($this->board),
-            'total_turns_winner' => $this->total_turns_winner,
-            'participants' => $this->multiplayerGamesPlayed->map(function ($multiplayer) {
-                if ($multiplayer->user) {
-                    return [
-                        'user_nickname' => $multiplayer->user->nickname,
-                        'pairs_discovered' => $multiplayer->pairs_discovered,
-                    ];
-                }
-                return null;
-            })->filter(),
+            'board' => new BoardResource($this->board),
+            'player2' => $this->multiplayerGamesPlayed
+                ->where('user_id', '!=', $this->created_user_id) 
+                ->first()?->user ?? 'Unknown User',
         ];
     }
 }

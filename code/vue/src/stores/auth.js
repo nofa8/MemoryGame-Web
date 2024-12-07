@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref, computed, inject } from 'vue'
 import { defineStore } from 'pinia'
 import axios from 'axios'
 import { useErrorStore } from '@/stores/error'
@@ -11,6 +11,11 @@ export const useAuthStore = defineStore('auth', () => {
 
   const user = ref(null)
   const token = ref('')
+  const socket = inject('socket')
+
+  const userId = computed(() => {
+    return user.value ? user.value.id : -1
+  })
 
   const userName = computed(() => {
     return user.value ? user.value.name : ''
@@ -35,6 +40,13 @@ export const useAuthStore = defineStore('auth', () => {
     return user.value ? user.value.gender : ''
   })
 
+  const getFirstLastName = (fullName) => {
+    const names = fullName.trim().split(' ')
+    const firstName = names[0] ?? ''
+    const lastName = names.length > 1 ? names[names.length - 1] : ''
+    return (firstName + ' ' + lastName).trim()
+  }
+
   const userPhotoUrl = computed(() => {
     const photoFile = user.value ? (user.value.photoFileName ?? '') : ''
     if (photoFile) {
@@ -45,7 +57,12 @@ export const useAuthStore = defineStore('auth', () => {
 
   const clearUser = () => {
     resetIntervalToRefreshToken()
+    if (user.value) {
+      socket.emit('logout', user.value)
+    }
     user.value = null
+    token.value = ''
+    localStorage.removeItem('token')
     axios.defaults.headers.common.Authorization = ''
   }
 
@@ -54,13 +71,14 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const responseLogin = await axios.post('auth/login', credentials)
       token.value = responseLogin.data.token
-      // To keep the token for next time 
+      // To keep the token for next time
       localStorage.setItem('token', token.value)
       axios.defaults.headers.common.Authorization = 'Bearer ' + token.value
       const responseUser = await axios.get('users/me')
       user.value = responseUser.data.data
+      socket.emit('login', user.value)
       repeatRefreshToken()
-      router.push({ name: "singlePlayerGames" });
+      router.push({ name: 'singlePlayerGames' })
       return user.value
     } catch (e) {
       clearUser()
@@ -110,6 +128,7 @@ export const useAuthStore = defineStore('auth', () => {
         try {
           const response = await axios.post('auth/refreshtoken')
           token.value = response.data.token
+          localStorage.setItem('token', token.value)
           axios.defaults.headers.common.Authorization = 'Bearer ' + token.value
           return true
         } catch (e) {
@@ -124,30 +143,33 @@ export const useAuthStore = defineStore('auth', () => {
         }
       },
       1000 * 60 * 110
-    )
+    ) // repeat every 110 minutes
     return intervalToRefreshToken
   }
 
   const restoreLogin = async function () {
     let storedToken = localStorage.getItem('token')
-        if (storedToken) {
-            try {
-                token.value = storedToken
-                axios.defaults.headers.common.Authorization = 'Bearer ' + token.value
-                const responseUser = await axios.get('users/me')
-                user.value = responseUser.data.data
-                repeatRefreshToken()
-                return true
-            } catch {
-                clearUser()
-                return false
-            }
+    if (storedToken) {
+      try {
+        token.value = storedToken
+        axios.defaults.headers.common.Authorization = 'Bearer ' + token.value
+        const responseUser = await axios.get('users/me')
+        user.value = responseUser.data.data
+        socket.emit('login', user.value)
+
+        repeatRefreshToken()
+        return true
+      } catch {
+        clearUser()
+        return false
+      }
     }
     return false
-}
+  }
 
   return {
     user,
+    userId,
     userName,
     userFirstLastName,
     userEmail,
@@ -156,6 +178,7 @@ export const useAuthStore = defineStore('auth', () => {
     userPhotoUrl,
     login,
     logout,
-    restoreLogin
+    restoreLogin,
+    getFirstLastName
   }
 })

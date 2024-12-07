@@ -43,7 +43,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     Route::prefix('multiplayer-games')->group(function () {
-        Route::post('/', [MultiplayerGamesPlayedController::class, 'addPlayer']); // Add player to a multiplayer game
+        Route::post('/', [MultiplayerGamesPlayedController::class, 'store']); // Add player to a multiplayer game
         Route::get('/{id}/players', [MultiplayerGamesPlayedController::class, 'listPlayers']); // Get players in a multiplayer game
     });
 
