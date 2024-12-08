@@ -29,11 +29,14 @@ class GameController extends Controller
     public function indexHistory(Request $request)
     {
         $userId = $request->user()->id;
-
+        
+        // se o user for admin ele pode ver todos os jogos
         if ($request->user()->type == 'A') {
             $games = Game::with(['creator', 'winner', 'board', 'multiplayerGamesPlayed.user'])
                 ->orderBy('began_at', 'desc')
                 ->paginate(10);
+                
+        // se não ele só pode ver os jogos que ele criou ou participou
         } else {
             $games = Game::where('created_user_id', $userId)
                 ->orWhereHas('multiplayerGamesPlayed', function ($query) use ($userId) {

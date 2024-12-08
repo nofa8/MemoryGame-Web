@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted } from 'vue';
 import { useHistoryStore } from '@/stores/history';
+import HistoryGame from './HistoryGame.vue';
 
 const historyStore = useHistoryStore();
 
@@ -26,16 +27,7 @@ onMounted(() => {
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y">
-                    <tr v-for="game in historyStore.games" :key="game.id" class="border-b hover:bg-gray-50">
-                        <td class="px-4 py-3 text-center">{{ historyStore.formatDate(game.start_time) }}</td>
-                        <td class="px-4 py-3 text-center">{{ game.board_rows }} x {{ game.board_cols }}</td>
-                        <td class="px-4 py-3 text-center">{{ historyStore.mapStatus(game.status) }}</td>
-                        <td class="px-4 py-3 text-center">{{ historyStore.formatTime(game.total_time) }}</td>
-                        <td class="px-4 py-3 text-center">{{ game.total_turns }}</td>
-                        <td class="px-4 py-3 text-center">{{ game.players.join(' vs ') }}</td>
-                        <td class="px-4 py-3 text-center">{{ game.winner }}</td>
-                        <td class="px-4 py-3 text-center">{{ game.creator }}</td>
-                    </tr>
+                    <HistoryGame v-for="game in historyStore.games" :key="game.id" :game="game" />
                 </tbody>
             </table>
         </div>
@@ -44,11 +36,9 @@ onMounted(() => {
                 @click="historyStore.fetchGameHistory(historyStore.currentPage - 1)">
                 Previous
             </button>
-
             <span class="self-center">
                 Page {{ historyStore.currentPage }} of {{ historyStore.lastPage }}
             </span>
-
             <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded"
                 :disabled="historyStore.currentPage === historyStore.lastPage"
                 @click="historyStore.fetchGameHistory(historyStore.currentPage + 1)">
