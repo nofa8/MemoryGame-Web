@@ -27,13 +27,12 @@ Route::get('/boards', [BoardController::class, "index"]); // Get Boards
 
 
 
-
 Route::middleware(['auth:sanctum'])->group(function () {
     // Route::get('/users/me', function (Request $request) {return $request->user();});
     Route::get('/users/me', [UserController::class, 'showMe']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::post('/auth/refreshtoken', [AuthController::class, 'refreshToken']);
-
+    Route::get('/history', [GameController::class, 'indexHistory']);
 
     Route::prefix('games')->group(function () {
         Route::post('/', [GameController::class, 'store']); // Create a new game

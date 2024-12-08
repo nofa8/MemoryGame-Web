@@ -1,3 +1,5 @@
+
+import HistoryTable from '@/components/history/HistoryTable.vue'
 import Login from '@/components/Login.vue'
 import MultiPlayerGames from '@/components/multiPlayer/MultiPlayerGames.vue'
 import Board from '@/components/singlePlayer/Board.vue'
@@ -28,11 +30,16 @@ const router = createRouter({
       component: Board
     },
     {
-      path: '/multi',
-      name: 'multiPlayerGames',
-      component: MultiPlayerGames
-    }
-  ]
+        path: '/multi',
+        name: 'multiPlayerGames',
+        component: MultiPlayerGames
+    },
+    {
+        path: '/history',
+        name: 'history',
+        component: HistoryTable
+    },
+],
 })
 
 let firstTime = true
