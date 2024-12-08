@@ -49,7 +49,7 @@ exports.createGameEngine = () => {
 
   // Plays a specific piece of the game (defined by its index)
   // Returns true if the game play is valid or an object with an error code and message otherwise;
-  const play = (game, index, playerSocketId, io) => {
+  const play = (game, index, playerSocketId,roomName, io) => {
     if (
       playerSocketId != game.player1SocketId &&
       playerSocketId != game.player2SocketId
@@ -82,12 +82,14 @@ exports.createGameEngine = () => {
         errorMessage: "Invalid move: card already flipped or matched!",
       };
     }
+    
     // Flip the card
     card.isFlipped = true;
     game.flippedCards.push(card);
-    // io.to(game.roomId).emit("gameChanged", game);
+    io.to(roomName).emit("gameChanged", game);
+
     if (game.flippedCards.length === 2) {
-      game.turns[game.currentPlayer] +=1
+      game.turns[game.currentPlayer] += 1;
 
       const [firstCard, secondCard] = game.flippedCards;
 
@@ -98,19 +100,24 @@ exports.createGameEngine = () => {
         game.flippedCards = [];
         pairsDiscoveredFor(game, game.currentPlayer);
         changeGameStatus(game);
+        io.to(roomName).emit("gameChanged", game);
       } else {
-        game.currentPlayer = game.currentPlayer === 1 ? 2 : 1;
-        game.flippedCards = [];
         setTimeout(() => {
           firstCard.isFlipped = false;
           secondCard.isFlipped = false;
-
+    
+          // Clear flipped cards and change the current player
+          game.flippedCards = [];
+          game.currentPlayer = game.currentPlayer === 1 ? 2 : 1;
+    
+          // Emit the updated game state after flipping the cards back down
+          io.to(roomName).emit("gameChanged", game);
         }, 1000);
       }
 
       //   changeGameStatus(game);
     }
-
+    
     return true;
   };
 

@@ -69,6 +69,7 @@ export const useAuthStore = defineStore('auth', () => {
   const login = async (credentials) => {
     storeError.resetMessages()
     try {
+      token.value = ""
       const responseLogin = await axios.post('auth/login', credentials)
       token.value = responseLogin.data.token
       // To keep the token for next time

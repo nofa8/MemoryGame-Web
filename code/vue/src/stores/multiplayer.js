@@ -133,6 +133,7 @@ export const useMultiplayerGamesStore = defineStore('multiPlayerGames', () => {
     }
   })
   socket.on('gameChanged', (game) => {
+    // console.log('Game changed: ', game)
     updateGame(game)
   })
   socket.on('gameQuitted', async (payload) => {

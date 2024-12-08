@@ -6,10 +6,11 @@ import ListGamesLobby from './ListGamesLobby.vue'
 import { useLobbyStore } from '@/stores/lobby'
 import { useBoardsStore } from '@/stores/board'
 import AlertDialog from '../ui/alert-dialog/AlertDialog.vue'
+import { useAuthStore } from '@/stores/auth'
 
 const storeLobby = useLobbyStore()
 const storeBoard = useBoardsStore()
-
+const storeAuth = useAuthStore()
 const boards = computed(() => storeBoard.boards)
 const selectedBoard = ref(null) 
 
@@ -23,6 +24,10 @@ onMounted(() => {
 const addNewGame = () => {
   if (!selectedBoard.value) {
     alert('Please select a board before creating a game.')
+    return
+  }
+  if (storeAuth.user.brain_coins_balance < 5){
+    alert('Not enough brain coins to play: '+ storeAuth.user.brain_coins_balance )
     return
   }
   storeLobby.addGame(selectedBoard.value) 

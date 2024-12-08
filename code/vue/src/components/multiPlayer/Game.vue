@@ -10,10 +10,6 @@ import { useMultiplayerGamesStore } from '@/stores/multiplayer'
 const storeMultiGames = useMultiplayerGamesStore()
 const storeAuth = useAuthStore()
 
-
-
-
-
 const props = defineProps({
   game: {
     type: Object,
@@ -29,25 +25,7 @@ const opponentName = computed(() => {
     : storeAuth.getFirstLastName(props.game.player1.name)
 })
 
-watch(
-  () => props.game.flippedCards,
-  (newFlippedCards) => {
-    // When two cards are flipped, check if they match
-    if (newFlippedCards.length === 2) {
-      const [firstCard, secondCard] = newFlippedCards;
 
-      if (firstCard.value === secondCard.value) {
-        // Cards match - play "success" music
-        playMusic("success");
-      } else {
-        // Cards do not match - play "error" or "fail" music
-        playMusic("fail");
-      }
-    }
-
-    
-  }
-);
 
 
 const gameEnded = computed(() => {

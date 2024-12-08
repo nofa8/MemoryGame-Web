@@ -218,23 +218,23 @@ io.on("connection", (socket) => {
     const roomName = "game_" + playData.gameId;
     // load game state from the game data stored directly on the room object:
     const game = socket.adapter.rooms.get(roomName).game;
-    const playResult = gameEngine.play(game, playData.index, socket.id,io);
+    const playResult = gameEngine.play(game, playData.index, socket.id,roomName,io);
     if (playResult !== true) {
       if (callback) {
         callback(playResult);
       }
       return;
     }
+
+    // if (callback) {
+    //   callback({ success: true });
+    // }
     // notify all users playing the game (in the room) that the game state has changed
     // Also, notify them that the game has ended
-    io.to(roomName).emit("gameChanged", game);
+    // io.to(roomName).emit("gameChanged", game);
     if (gameEngine.gameEnded(game)) {
       console.log("Game ended: "+game)
       io.to(roomName).emit("gameEnded", game);
-    }else{
-      // if (callback) {
-      //   callback(game);
-      // }
     }
     
   });

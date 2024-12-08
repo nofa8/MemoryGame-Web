@@ -197,7 +197,7 @@ class MultiplayerGamesPlayedController extends Controller
 
         }
         $game->save();
-        return response()->json(['success' => 'Multiplayer game updated successfully','Game'=> new LobbyResource($game)]);
+        return response()->json(['success' => 'Multiplayer game updated successfully','Game'=> new GameResource($game)]);
     }
 
 
