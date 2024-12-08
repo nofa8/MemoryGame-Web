@@ -7,6 +7,7 @@ exports.createGameEngine = () => {
     // 3 -> draw
     gameFromDB.currentPlayer = 1; // Player 1 starts
     gameFromDB.pairsDiscovered = { 1: 0, 2: 0 };
+    gameFromDB.turns = { 1: 0, 2: 0 };
     gameFromDB.size = gameFromDB.board.cols * gameFromDB.board.rows;
     gameFromDB.board = createCardPairs(
       gameFromDB.board.cols * gameFromDB.board.rows
@@ -44,7 +45,7 @@ exports.createGameEngine = () => {
     game.pairsDiscovered[player_id] += 1;
   };
   // returns whether the game as ended or not
-  const gameEnded = (game) => game.gameStatus === "E";
+  const gameEnded = (game) => game.gameStatus !== 0;
 
   // Plays a specific piece of the game (defined by its index)
   // Returns true if the game play is valid or an object with an error code and message otherwise;
@@ -84,9 +85,9 @@ exports.createGameEngine = () => {
     // Flip the card
     card.isFlipped = true;
     game.flippedCards.push(card);
-    io.to(game.roomId).emit("gameChanged", game);
+    // io.to(game.roomId).emit("gameChanged", game);
     if (game.flippedCards.length === 2) {
-      game.currentPlayer = game.currentPlayer === 1 ? 2 : 1;
+      game.turns[game.currentPlayer] +=1
 
       const [firstCard, secondCard] = game.flippedCards;
 
@@ -98,11 +99,12 @@ exports.createGameEngine = () => {
         pairsDiscoveredFor(game, game.currentPlayer);
         changeGameStatus(game);
       } else {
+        game.currentPlayer = game.currentPlayer === 1 ? 2 : 1;
         game.flippedCards = [];
         setTimeout(() => {
           firstCard.isFlipped = false;
           secondCard.isFlipped = false;
-          io.to(game.roomId).emit("gameChanged", game);
+
         }, 1000);
       }
 
@@ -146,7 +148,7 @@ exports.createGameEngine = () => {
       };
     }
     game.gameStatus = playerSocketId == game.player1SocketId ? 2 : 1;
-    game.status = "ended";
+    game.status = "E";
     return true;
   };
   // Check if socket can close the game (game must have ended and player must belong to game)

@@ -12,12 +12,28 @@ export const useMultiplayerGamesStore = defineStore('multiPlayerGames', () => {
   const { toast } = useToast()
   const socket = inject('socket')
   const games = ref([])
+  const correctSound = new Audio('/correct.mp3')
+  const wrongSound = new Audio('/wrong.mp3')
+  correctSound.preload = 'auto'
+  wrongSound.preload = 'auto'
+  
 
   const totalGames = computed(() => games.value.length)
   const updateGame = (game) => {
     const gameIndex = games.value.findIndex((g) => g.id === game.id)
     if (gameIndex !== -1) {
+      
+      
       games.value[gameIndex] = { ...game } // shallow copy
+
+      if (game.flippedCards.length == 2){
+        if (game.flippedCards[0].value== game.flippedCards[1].value) {
+          correctSound.play()
+        } else {
+          wrongSound.play()
+        }
+        game.flippedCards = [];
+      }
     }
   }
 
@@ -85,6 +101,7 @@ export const useMultiplayerGamesStore = defineStore('multiPlayerGames', () => {
       if (webSocketServerResponseHasError(response)) {
         return
       }
+      
       removeGameFromList(game)
     })
   }
@@ -100,13 +117,17 @@ export const useMultiplayerGamesStore = defineStore('multiPlayerGames', () => {
   })
   socket.on('gameEnded', async (game) => {
     updateGame(game)
-    // Player that created the game is responsible for updating on the database
-    if (playerNumberOfCurrentUser(game) === 1) {
-      const APIresponse = await axios.patch('games/' + game.id, {
-        status: 'ended',
-        winner_id:
-          game.gameStatus === 1 ? game.player1.id : game.gameStatus === 2 ? game.player2_id : null
-      })
+    
+    const currentUser = playerNumberOfCurrentUser(game)
+    if (currentUser === 1 ||currentUser==2) {
+      const APIresponse = await axios.patch('multiplayer-games/' + game.id, {
+        turns: game.turns[currentUser], 
+        status: game.status, 
+        pairs_discovered: game.pairsDiscovered[currentUser], // The number of pairs matched in the game
+        won: game.gameStatus ===currentUser ? 1 : 0, 
+        user_id: storeAuth.userId, 
+      });
+
       const updatedGameOnDB = APIresponse.data.data
       console.log('Game has ended and updated on the database: ', updatedGameOnDB)
     }
@@ -131,7 +152,7 @@ export const useMultiplayerGamesStore = defineStore('multiPlayerGames', () => {
       variant: 'destructive'
     })
     const APIresponse = await axios.patch('games/' + game.id, {
-      status: 'interrupted',
+      status: 'I',
       winner_id:
         game.gameStatus === 1 ? game.player1_id : game.gameStatus === 2 ? game.player2_id : null
     })

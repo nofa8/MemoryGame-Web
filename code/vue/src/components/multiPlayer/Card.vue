@@ -1,4 +1,6 @@
 <script setup>
+import { watch } from 'vue';
+
 const props = defineProps(['piece', 'index', 'isFlipped', 'isMatched']);
 const emit = defineEmits(['flip']);
 
@@ -9,10 +11,17 @@ flipSound.preload = 'auto';
 const flipCard = () => {
   // Emit the flip event only if the card is not already flipped or matched
   if (!props.isFlipped && !props.isMatched) {
-    flipSound.play(); // Play the flip sound
+    // flipSound.play(); // Play the flip sound
     emit('flip', props.index);
   }
 }
+
+watch(() => props.isFlipped, (newVal) => {
+  if (newVal== true) {
+    flipSound.play(); // Play the flip sound when the card is flipped
+  }
+})
+
 </script>
 
 <template>

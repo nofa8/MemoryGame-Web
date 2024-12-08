@@ -1,5 +1,5 @@
 <script setup>
-import { inject } from 'vue'
+import { inject, watch } from 'vue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { computed } from 'vue'
@@ -9,6 +9,10 @@ import { useMultiplayerGamesStore } from '@/stores/multiplayer'
 
 const storeMultiGames = useMultiplayerGamesStore()
 const storeAuth = useAuthStore()
+
+
+
+
 
 const props = defineProps({
   game: {
@@ -24,6 +28,27 @@ const opponentName = computed(() => {
     ? storeAuth.getFirstLastName(props.game.player2.name)
     : storeAuth.getFirstLastName(props.game.player1.name)
 })
+
+watch(
+  () => props.game.flippedCards,
+  (newFlippedCards) => {
+    // When two cards are flipped, check if they match
+    if (newFlippedCards.length === 2) {
+      const [firstCard, secondCard] = newFlippedCards;
+
+      if (firstCard.value === secondCard.value) {
+        // Cards match - play "success" music
+        playMusic("success");
+      } else {
+        // Cards do not match - play "error" or "fail" music
+        playMusic("fail");
+      }
+    }
+
+    
+  }
+);
+
 
 const gameEnded = computed(() => {
   return props.game.gameStatus > 0
@@ -87,7 +112,7 @@ const statusGameMessage = computed(() => {
       
     case 1:
     case 2:
-      return storeGames.playerNumberOfCurrentUser(props.game) == props.game.gameStatus
+      return storeMultiGames.playerNumberOfCurrentUser(props.game) == props.game.gameStatus
         ? 'You won'
         : 'You lost';
     case 3:
@@ -147,7 +172,7 @@ const quit = () => {
       <CardDescription>
         <div class="text-base">
           <span class="font-bold">Opponent:</span> {{ opponentName }}
-          {{ game.status == 'interrupted' ? ' / Interrupted' : '' }}
+          {{ game.status == 'I' ? ' / Interrupted' : '' }}
         </div>
       </CardDescription>
     </CardHeader>

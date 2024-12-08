@@ -17,7 +17,7 @@ const route = useRoute()
 const router = useRouter()
 
 const leavingSound = new Audio('/leaving.mp3')
-
+leavingSound.volume = 0.2
 const game_id = ref(null)
 const rows = ref(0)
 const cols = ref(0)
@@ -41,13 +41,12 @@ const showSeconds = computed(() => {
 })
 
 const dynamicBackground = computed(() => {
-  const intensity = Math.max(0, 255 - streak.value * 40); // Adjust the multiplier for desired sensitivity
-  const redColor = `rgba(255, ${intensity}, ${intensity}, 1)`;
-  const middleColor = `rgba(255, 255, 255, 1)`; // White at the center
+  const intensity = Math.max(0, 255 - streak.value * 40) // Adjust the multiplier for desired sensitivity
+  const redColor = `rgba(255, ${intensity}, ${intensity}, 1)`
+  const middleColor = `rgba(255, 255, 255, 1)` // White at the center
 
-  return `linear-gradient(to right, ${redColor}, ${middleColor}, ${redColor})`;
-});
-
+  return `linear-gradient(to right, ${redColor}, ${middleColor}, ${redColor})`
+})
 
 const stopWorking = ref(true)
 
@@ -109,9 +108,10 @@ watch(leaving, (newValue) => {
           status: 'I'
         }
 
-        const response = axios.put(`/games/${game_id.value}`, payload).then((response) => {
-          //update visual do necessário
-        })
+        const response = axios.put(`/games/${game_id.value}`, payload)
+        // .then((response) => {
+        //   //update visual do necessário
+        // })
       } catch (e) {
         console.log(e)
         storeError.setErrorMessages(
@@ -163,16 +163,27 @@ onBeforeRouteLeave((to, from, next) => {
   }
 })
 
-const handleBeforeUnload = (event) => {
-  // Only trigger the PUT request if the user is still playing
-  if (status.value == '0') {
+const handleBeforeUnload = async (event) => {
+  if (status.value === '0' && storeAuth.user != null) {
+    // Show a confirmation dialog to the user
+    event.preventDefault();
+    event.returnValue = "Are you sure you want to leave the game? Your progress may be lost.";
+
     try {
-      leaving.value = true
+      const payload = {
+        status: 'I',
+      };
+
+      await axios.put(`/games/${game_id.value}`, payload);
+
+      console.log("Game status updated successfully.");
     } catch (error) {
-      console.error('Error quitting the game on tab close:', error)
+      console.error("Error updating game status:", error);
     }
   }
-}
+};
+
+
 
 onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', handleBeforeUnload)
@@ -181,17 +192,11 @@ onBeforeUnmount(() => {
 // Add event listener for beforeunload
 window.addEventListener('beforeunload', handleBeforeUnload)
 
-
-
-
 start()
 </script>
 <template>
-  <div
-    class="flex justify-center items-center min-h-screen p-4 "
-    
-  >
-  <!-- Fire here please-->
+  <div class="flex justify-center items-center min-h-screen p-4">
+    <!-- Fire here please-->
     <CardCard
       class="w-full max-w-6xl mx-auto h-auto rounded-lg bg-white dark:bg-gray-800 border-0 shadow-md p-6"
     >
@@ -225,14 +230,7 @@ start()
 
         <!-- Game Grid Section -->
         <div class="grid justify-center items-center mt-6 w-full">
-          <div
-            :class="[
-              'grid',
-              gridClasses,
-              'gap-2 sm:gap-4 lg:gap-6 p-2 sm:p-4',
-              'w-full'
-            ]"
-          >
+          <div :class="['grid', gridClasses, 'gap-2 sm:gap-4 lg:gap-6 p-2 sm:p-4', 'w-full']">
             <CardComponent
               v-for="(card, idx) in board"
               :key="idx"

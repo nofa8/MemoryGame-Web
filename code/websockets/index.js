@@ -143,7 +143,7 @@ io.on("connection", (socket) => {
     util.getRoomGamesPlaying(socket).forEach(([roomName, room]) => {
       socket.leave(roomName);
       if (!gameEngine.gameEnded(room.game)) {
-        room.game.status = "interrupted";
+        room.game.status = "I";
         room.game.gameStatus = 3;
         io.to(roomName).emit("gameInterrupted", room.game);
       }
@@ -169,7 +169,7 @@ io.on("connection", (socket) => {
       util.getRoomGamesPlaying(socket).forEach(([roomName, room]) => {
         socket.leave(roomName);
         if (!gameEngine.gameEnded(room.game)) {
-          room.game.status = "interrupted";
+          room.game.status = "I";
           room.game.gameStatus = 3;
           io.to(roomName).emit("gameInterrupted", room.game);
         }
@@ -229,11 +229,14 @@ io.on("connection", (socket) => {
     // Also, notify them that the game has ended
     io.to(roomName).emit("gameChanged", game);
     if (gameEngine.gameEnded(game)) {
+      console.log("Game ended: "+game)
       io.to(roomName).emit("gameEnded", game);
+    }else{
+      // if (callback) {
+      //   callback(game);
+      // }
     }
-    if (callback) {
-      callback(game);
-    }
+    
   });
   socket.on("quitGame", (gameId, callback) => {
     if (!util.checkAuthenticatedUser(socket, callback)) {
@@ -251,7 +254,7 @@ io.on("connection", (socket) => {
     }
     // notify all users playing the game (in the room) that the game state has changed
     // Also, notify them that the game has been quit and the game has ended
-    io.to(roomName).emit("gameChanged", game);
+    // io.to(roomName).emit("gameChanged", game);
     io.to(roomName).emit("gameQuitted", {
       userQuit: socket.data.user,
       game: game,

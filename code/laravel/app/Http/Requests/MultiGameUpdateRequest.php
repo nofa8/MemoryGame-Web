@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class GameUpdateRequest extends FormRequest
+class MultiGameUpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,6 +24,9 @@ class GameUpdateRequest extends FormRequest
         return [
             'turns' => 'sometimes|integer',
             'status' => 'required|string|in:E,I',
+            'pairs_discovered' => 'sometimes|integer',
+            'won' => 'sometimes|integer|in:0,1',
+            'user_id' => 'sometimes|integer|exists:users,id',
         ];
     }
 }

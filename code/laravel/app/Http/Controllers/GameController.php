@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Hamcrest\Type\IsNumeric;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 use function PHPUnit\Framework\isNull;
 
@@ -123,7 +124,9 @@ class GameController extends Controller
         } elseif ($game->status === 'I' || $game->status === 'E') {
             return response()->json(['error' => 'Game is not in progress'], 400);
         }
-
+        if ($game->type === 'M') {
+            return response()->json(['error' => 'Not a singleplayer game'], 400);
+        }
         $validated = $request->validated();
 
        
@@ -134,72 +137,16 @@ class GameController extends Controller
             return response()->json(['error' => 'When a game ends, total number of turns is required'], 400);
         }
 
+        $result =  $this->updateSinglePlayerGame($game, $validated);
         
-
-        if ($game->type == 'M') {
-            $result = $this->updateMultiplayerGame($game, $validated, $request->user());
-        } else {
-            $result =  $this->updateSinglePlayerGame($game, $validated);
-        }
 
         return $result instanceof JsonResponse ? $result : new GameResource($game);
     }
 
-    private function updateMultiplayerGame($game, $validated, $user)
-    {
-        $game->status = $validated['status'];
-
-        if ($validated['status'] === 'E') {
-            if (is_null($validated['winner_user_id'])) {
-                return response()->json(['error' => 'Game needs a winner to end'], 400);
-            }
-
-            $multi = MultiplayerGamesPlayed::where([['game_id', $game->id], ['user_id', $validated['user_id']]])->first();
-            if (!$multi) {
-                return response()->json(['error' => 'Player not found in the game'], 404);
-            }
-
-            $game->ended_at = now();
-            $this->calculateGameTime($game);
-
-            $transaction = new Transaction([
-                'transaction_datetime' => now(),
-                'user_id' => $user->id,
-                'game_id' => $game->id,
-                'type' => 'I',
-            ]);
-
-            if ($multi->user_id == $validated['winner_user_id']) {
-                $game->total_turns_winner = $validated['turns'];
-                $multi->player_won = 1;
-                $user->brain_coins_balance += 7;
-                $transaction->brain_coins = 7;
-            } else {
-                if ($user->brain_coins_balance < 5) {
-                    return response()->json(['error' => 'Insufficient brain coins'], 400);
-                }
-                $multi->player_won = 0;
-                $user->brain_coins_balance -= 5;
-                $transaction->brain_coins = -5;
-            }
-
-            $user->save();
-            $transaction->save();
-
-            $multi->pairs_discovered = $validated['pairs_discovered'];
-            $multi->save();
-        }
-
-        $game->save();
-        return response()->json(['success' => 'Multiplayer game updated successfully']);
-    }
+    
 
     private function updateSinglePlayerGame($game, $validated)
     {
-        if (array_key_exists('winner_user_id',$validated)) {
-            return response()->json(['error' => "Single-player games don't have a winner"], 400);
-        }
-
         $game->status = $validated['status'];
 
         if ($validated['status'] === 'E') {
@@ -211,6 +158,8 @@ class GameController extends Controller
         $game->save();
         return response()->json(['success' => 'Single-player game updated successfully']);
     }
+    
+    
 
 
     private function calculateGameTime(Game $game)

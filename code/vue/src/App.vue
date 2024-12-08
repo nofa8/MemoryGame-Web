@@ -68,7 +68,7 @@ const handleMessageFromInputDialog = (message) => {
 onMounted(() => {
   document.addEventListener('click', () => {
     // Play the ambient sound only if it isn't already playing
-    if (firstTime.value && isMusicPlaying.value) {
+    if (firstTime.value && !isMusicPlaying.value) {
       ambientSound.play()
       firstTime.value = false
       isMusicPlaying.value = true

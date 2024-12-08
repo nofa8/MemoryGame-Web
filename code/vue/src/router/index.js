@@ -41,9 +41,10 @@ router.beforeEach(async (to, from, next) => {
   const storeAuth = useAuthStore()
 
   if (firstTime ) {
+    firstTime = false
     if (localStorage.getItem('token') != null){
       await storeAuth.restoreLogin()
-      firstTime = false
+      
     }
 
     if (to.name == 'game' ){
