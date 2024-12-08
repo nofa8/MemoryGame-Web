@@ -13,15 +13,16 @@ class MultiplayerGamesPlayed extends Model
         'player_won',
         'pairs_discovered'
     ];
+    public $timestamps = false;
 
     protected $table = "multiplayer_games_played";
 
-    public function user() : BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function game() : BelongsTo
+    public function game(): BelongsTo
     {
         return $this->belongsTo(Game::class);
     }
