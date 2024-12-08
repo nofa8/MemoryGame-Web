@@ -8,7 +8,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialogTitle
 } from '@/components/ui/alert-dialog'
 
 const isOpen = ref(false)
@@ -18,23 +18,29 @@ const cancelText = ref('Cancel')
 const actionText = ref('OK')
 const actionCallBack = ref(null)
 
-const open = (actionCallBackFunction, title = 'Title',  cancelLabel = 'Cancel', actionLabel = 'Continuar', description = '') => {
-    titleText.value = title
-    descriptionText.value = description
-    cancelText.value = cancelLabel
-    actionText.value = actionLabel 
-    actionCallBack.value = actionCallBackFunction
-    isOpen.value = true;
+const open = (
+  actionCallBackFunction,
+  title = 'Title',
+  cancelLabel = 'Cancel',
+  actionLabel = 'Continuar',
+  description = ''
+) => {
+  titleText.value = title
+  descriptionText.value = description
+  cancelText.value = cancelLabel
+  actionText.value = actionLabel
+  actionCallBack.value = actionCallBackFunction
+  isOpen.value = true
 }
 
 const handleAction = () => {
-    if (actionCallBack.value) {
-        actionCallBack.value()
-    }
+  if (actionCallBack.value) {
+    actionCallBack.value()
+  }
 }
 
 defineExpose({
-    open
+  open
 })
 </script>
 
@@ -43,12 +49,11 @@ defineExpose({
     <AlertDialogContent>
       <AlertDialogHeader>
         <AlertDialogTitle>{{ titleText }}</AlertDialogTitle>
-        <AlertDialogDescription>{{ descriptionText }}           
-        </AlertDialogDescription>
+        <AlertDialogDescription>{{ descriptionText }} </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
         <AlertDialogCancel>{{ cancelText }}</AlertDialogCancel>
-        <AlertDialogAction @click="handleAction">{{ actionText }}</AlertDialogAction>
+        <AlertDialogAction @click.prevent="handleAction">{{ actionText }}</AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>

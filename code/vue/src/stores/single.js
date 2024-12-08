@@ -1,36 +1,41 @@
-import { ref, computed } from 'vue'
+import { ref, computed, inject } from 'vue'
+import { defineStore } from 'pinia'
+import axios from 'axios'
+import { useToast } from '@/components/ui/toast/use-toast'
 
-export function useMemoryGame(board_rows = 4, board_cols = 3) {
-  const boardSize = board_cols * board_rows
+import { useErrorStore } from '@/stores/error'
+import { useAuthStore } from '@/stores/auth'
+
+export const useSingleStore = defineStore('single', () => {
   // Game status
-  const status = ref(0)
-  // Game underway -> 0
-  // Ended -> 1
+  const status = ref('PL')
+  // PE -> game pending
+  // PL -> in progress
+  // E -> ended
+  // I -> interrupted
+  // Card states
   const board = ref([])
   const flippedCards = ref([])
   const matchedPairs = ref([])
   const moves = ref(0)
-  const streak = ref(0) // Track current streak
-  const bestStreak = ref(0) // Track the best streak
-  const correctSound = new Audio('/correct.mp3')
-  const wrongSound = new Audio('/wrong.mp3')
-
-  correctSound.preload = 'auto'
-  wrongSound.preload = 'auto'
 
   // Create card pairs
   const createCardPairs = () => {
+    // Define possible card types and values
     const cardTypes = ['e', 'o', 'p', 'c']
     const cardValues = [1, 2, 3, 4, 5, 6, 7, 11, 12, 13]
 
+    // Generate all possible unique card combinations
     const cardCombinations = cardTypes.flatMap((type) =>
       cardValues.map((value) => `${type}${value}`)
     )
 
+    // Randomly select half the board size of unique combinations
     const selectedCombinations = cardCombinations
       .sort(() => Math.random() - 0.5)
       .slice(0, boardSize / 2)
 
+    // Duplicate values and create card objects
     const shuffledCards = [...selectedCombinations, ...selectedCombinations]
       .sort(() => Math.random() - 0.5)
       .map((cardCode, index) => ({
@@ -44,67 +49,63 @@ export function useMemoryGame(board_rows = 4, board_cols = 3) {
   }
 
   // Start or restart the game
-  const start = () => {
-    status.value = '0'
+  const start = (size = boardSize) => {
+    status.value = 'PL'
     board.value = createCardPairs()
     flippedCards.value = []
     matchedPairs.value = []
     moves.value = 0
-    streak.value = 0
-    bestStreak.value = 0
   }
 
   // Flip a card
   const play = (index) => {
-    if (status.value === '1' || board.value[index].isMatched || flippedCards.value.length >= 2) {
+    if (status === 'E' || board.value[index].isMatched || flippedCards.value.length >= 2) {
       return false
     }
 
+    // Flip the card
     board.value[index].isFlipped = true
     flippedCards.value.push(board.value[index])
 
+    // Check for match when two cards are flipped
     if (flippedCards.value.length === 2) {
       moves.value++
 
+      // If cards match
       if (flippedCards.value[0].value === flippedCards.value[1].value) {
+        // Mark cards as matched
         board.value.forEach((card) => {
           if (flippedCards.value.some((f) => f.id === card.id)) {
             card.isMatched = true
           }
         })
 
+        // Add to matched pairs
         matchedPairs.value.push(flippedCards.value[0].value)
-        flippedCards.value = []
-
-        streak.value++ // Increment streak on correct match
-        if (streak.value > bestStreak.value) {
-          bestStreak.value = streak.value // Update best streak if necessary
-        }
-
-        correctSound.play()
-      } else {
-        setTimeout(() => {
-          wrongSound.play()
-          flippedCards.value.forEach((card) => {
-            if (!card.isMatched) {
-              card.isFlipped = false
-            }
-          })
-          flippedCards.value = []
-
-          streak.value = 0 // Reset streak on incorrect match
-        }, 1000)
       }
+
+      // Reset flipped cards after a delay if not matched
+      setTimeout(() => {
+        flippedCards.value.forEach((card) => {
+          if (!card.isMatched) {
+            card.isFlipped = false
+          }
+        })
+        flippedCards.value = []
+      }, 1000)
     }
 
+    // Check game completion
     changeGameStatus()
+
     return true
   }
 
   // Change game status
   const changeGameStatus = () => {
+    // Check if all pairs are matched
     if (matchedPairs.value.length === boardSize / 2) {
-      status.value = '1' // Game ended
+      status.value = 'E' // Game won
     }
   }
 
@@ -114,9 +115,7 @@ export function useMemoryGame(board_rows = 4, board_cols = 3) {
     board,
     moves,
     matchedPairs,
-    streak,
-    bestStreak,
     start,
     play
   }
-}
+})
