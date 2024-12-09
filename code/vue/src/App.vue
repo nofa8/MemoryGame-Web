@@ -65,10 +65,13 @@ const handleMessageFromInputDialog = (message) => {
         <h1 class="text-3xl font-bold tracking-wide">Memory Game</h1>
       </div>
       <p class="text-lg">
-        {{
-          storeAuth.user ? 'Welcome, ' + storeAuth.userFirstLastName : 'Ready to test your memory?'
-        }}
+      {{
+        storeAuth.user 
+          ? `Welcome, ${storeAuth.userFirstLastName}. You have ${storeAuth.userbrain_coins_balance} ${storeAuth.brain_coins_balance === 1 ? 'Brain Coin' : 'Brain Coins'}`
+          : 'Ready to test your memory?'
+      }}
       </p>
+
     </header>
 
     <!-- Navigation -->
@@ -101,6 +104,15 @@ const handleMessageFromInputDialog = (message) => {
           active-class="bg-red-800 hover:bg-red-800"
         >
           History
+        </RouterLink>
+        <RouterLink
+         v-if="storeAuth.user"
+        :to="{ name: 'transactions' }"
+        class="px-6 py-3 rounded-md text-white bg-yellow-500 hover:bg-pink-500 transition-all shadow-md"
+        active-class="bg-pink-600 hover:bg-pink-600"
+
+        >
+          Coins
         </RouterLink>
       </div>
 

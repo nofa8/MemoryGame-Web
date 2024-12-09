@@ -35,6 +35,10 @@ export const useAuthStore = defineStore('auth', () => {
     return user.value ? user.value.gender : ''
   })
 
+  const userbrain_coins_balance = computed(() => {
+    return user.value ? user.value.brain_coins_balance : ''
+  })
+
   const userPhotoUrl = computed(() => {
     const photoFile = user.value ? (user.value.photoFileName ?? '') : ''
     if (photoFile) {
@@ -135,6 +139,7 @@ export const useAuthStore = defineStore('auth', () => {
     userType,
     userGender,
     userPhotoUrl,
+    userbrain_coins_balance,
     login,
     logout
   }

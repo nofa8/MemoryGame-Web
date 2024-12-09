@@ -2,36 +2,32 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Transaction extends Model
 {
-    //– Type of transaction ('B' for bonus, 'P' for purchases, 'I' for internal spending/earnings
-    //related to a game
+    use HasFactory;
 
 
-    // – Game ID linked to the transaction (only applicable for type 'I')
 
-    // euros – Value of the purchase transaction (in euros; only applicable for type 'P').
+    public $timestamps = false;
+
     protected $fillable = [
+        'type',
         'transaction_datetime',
         'user_id',
         'game_id',
-        'type',
         'euros',
-        'brain_coins',
         'payment_type',
-        'payment_reference'
+        'payment_reference',
+        'brain_coins',
+        'custom',
     ];
 
-    public function user() : BelongsTo 
-    {
-        return $this->belongsTo(User::class);
-    }
+    protected $casts = [
+        'custom' => 'array',
+    ];
 
-    public function game() : BelongsTo
-    {
-        return $this->belongsTo(Game::class);
-    }
+
 }
