@@ -1,18 +1,19 @@
 <script setup>
 import { onMounted } from 'vue'
 import Game from './Game.vue'
-import { useGamesStore } from '@/stores/games';
+import { useMultiplayerGamesStore } from '@/stores/multiplayer';
 
-const storeGames = useGamesStore()
+
+const storeMultiGames = useMultiplayerGamesStore()
 
 onMounted(() => {
-    storeGames.fetchPlayingGames()
+    storeMultiGames.fetchPlayingGames()
 })
 </script>
 
 <template>
     <div class="flex flex-wrap justify-stretch">
-        <Game v-for="game in storeGames.games" :key="game.id" :game="game">
+        <Game v-for="game in storeMultiGames.games" :key="game.id" :game="game">
         </Game>
     </div>
 </template>

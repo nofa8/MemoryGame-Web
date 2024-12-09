@@ -1,29 +1,41 @@
+
 import HistoryTable from '@/components/history/HistoryTable.vue'
-import HomeComponent from '@/components/HomeComponent.vue'
 import Login from '@/components/Login.vue'
 import MultiPlayerGames from '@/components/multiPlayer/MultiPlayerGames.vue'
+
 import ScoreGlobal from '@/components/scoreBoards/ScoreGlobal.vue'
 import ScorePersonal from '@/components/scoreBoards/ScorePersonal.vue'
+
+import Board from '@/components/singlePlayer/Board.vue'
+
 import SinglePlayerGame from '@/components/singlePlayer/SinglePlayerGame.vue'
-import WebSocketTester from '@/components/WebSocketTester.vue'
+import TransactionsTable from '@/components/transactions/TransactionsTable.vue'
+import Purchases from '@/components/transactions/PurchasesPage.vue';
+
+import { useAuthStore } from '@/stores/auth'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes:  [
+  routes: [
     {
-        path: '/',
-        name: 'singlePlayerGames',
-        component: SinglePlayerGame
+      path: '/',
+      name: 'singlePlayerGames',
+      component: SinglePlayerGame
     },
     {
-        path: '/single',
-        redirect: { name: 'singlePlayerGames' }
-    },    
+      path: '/single',
+      redirect: { name: 'singlePlayerGames' }
+    },
     {
-        path: '/login',
-        name: 'login',
-        component: Login
+      path: '/login',
+      name: 'login',
+      component: Login
+    },
+    {
+      path: '/game',
+      name: 'game',
+      component: Board
     },
     {
         path: '/multi',
@@ -45,7 +57,37 @@ const router = createRouter({
         name: 'scoreboardGlobal',
         component: ScoreGlobal
     },
+
+            path: '/transactions',
+            name: 'transactions',
+            component: TransactionsTable
+        },
+        {
+            path: '/purchase',
+            name: 'Purchase',
+            component: Purchases,
+        },
 ],
 })
 
+let firstTime = true
+
+router.beforeEach(async (to, from, next) => {
+  const storeAuth = useAuthStore()
+
+  if (firstTime ) {
+    firstTime = false
+    if (localStorage.getItem('token') != null){
+      await storeAuth.restoreLogin()
+      
+    }
+
+    if (to.name == 'game' ){
+      router.push({ name: "singlePlayerGames" });
+    }
+
+  }
+  
+  next()
+})
 export default router

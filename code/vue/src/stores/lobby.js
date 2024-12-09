@@ -8,7 +8,6 @@ export const useLobbyStore = defineStore("lobby", () => {
     const storeAuth = useAuthStore();
     const storeError = useErrorStore();
     const socket = inject('socket')
-
     const games = ref([]);
     const webSocketServerResponseHasError = (response) => {
         if (response.errorCode) {
@@ -39,14 +38,15 @@ export const useLobbyStore = defineStore("lobby", () => {
         });
     };
     // add a game to the lobby
-    const addGame = () => {
+    const addGame = (board) => {
         storeError.resetMessages();
-        socket.emit("addGame", (response) => {
+        socket.emit("addGame", board, (response) => {
             if (webSocketServerResponseHasError(response)) {
                 return;
             }
         });
     };
+    
 
     // remove a game from the lobby
     const removeGame = (id) => {
@@ -63,16 +63,18 @@ export const useLobbyStore = defineStore("lobby", () => {
     };
 
     // join a game of the lobby
-    const joinGame = (id) => {
+    const joinGame = (id, board) => {
         storeError.resetMessages();
-        socket.emit("joinGame", id, async (response) => {
+        socket.emit("joinGame", id, board ,async (response) => {
             // callback executed after the join is complete
             if (webSocketServerResponseHasError(response)) {
                 return;
             }
-            const APIresponse = await axios.post("games", {
-                player1_id: response.player1.id,
-                player2_id: response.player2.id,
+            const APIresponse = await axios.post("multiplayer-games", {
+                created_user_id: response.player1.id,
+                joined_user_id: response.player2.id,
+                type : 'M',
+                board_id : response.board.id
             });
             const newGameOnDB = APIresponse.data.data;
             newGameOnDB.player1SocketId = response.player1SocketId;
@@ -86,7 +88,7 @@ export const useLobbyStore = defineStore("lobby", () => {
 
     // Whether the current user can join a specific game from the lobby
     const canJoinGame = (game) => {
-        return storeAuth.user && game.player1.id !== storeAuth.userId;
+        return storeAuth.user && game.player1.id !== storeAuth.userId && storeAuth.user.brain_coins_balance > 5;
     };
 
     return {

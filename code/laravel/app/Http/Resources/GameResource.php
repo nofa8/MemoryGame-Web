@@ -17,10 +17,10 @@ class GameResource extends JsonResource
         return [
             'id' => $this->id,
             'type' => $this->type,
-            'status' => $this->status, 
-            'time' => $this->total_time, 
+            'status' => $this->status,
+            'time' => $this->total_time,
             'creator' => $this->created_user_id,
-            'name' => $this->creator->name,
+            'name' =>  $this?->creator?->nickname,
             // 'winner' => $this->winner_id ,
             'start_time' => $this->began_at,
             'end_time' => $this->ended_at,
