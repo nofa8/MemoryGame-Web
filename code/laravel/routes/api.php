@@ -20,11 +20,10 @@ Route::post('/gamesTAES', [GameController::class, 'storeTAES']);
 ///////////////////////////////////
 Route::post('/auth/login', [AuthController::class, "login"]);
 
-Route::get('/boards', [BoardController::class, "index"]); // Get Boards
-
-
-
-
+Route::get('/boards', [BoardController::class, "index"]);
+Route::get('/games', [GameController::class, "indexFinished"]);
+Route::post('/games', [GameController::class, 'store']);
+Route::get('/scoreboardGlobal', [GameController::class, 'indexScoreboardGlobal']);
 
 
 
@@ -34,6 +33,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::post('/auth/refreshtoken', [AuthController::class, 'refreshToken']);
     Route::get('/history', [GameController::class, 'indexHistory']);
+    Route::get('/scoreboardPersonal', [GameController::class, 'indexScoreboardPersonal']);
 
 
     Route::get('/transactions', [TransactionController::class, 'index']);

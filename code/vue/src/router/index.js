@@ -2,7 +2,12 @@
 import HistoryTable from '@/components/history/HistoryTable.vue'
 import Login from '@/components/Login.vue'
 import MultiPlayerGames from '@/components/multiPlayer/MultiPlayerGames.vue'
+
+import ScoreGlobal from '@/components/scoreBoards/ScoreGlobal.vue'
+import ScorePersonal from '@/components/scoreBoards/ScorePersonal.vue'
+
 import Board from '@/components/singlePlayer/Board.vue'
+
 import SinglePlayerGame from '@/components/singlePlayer/SinglePlayerGame.vue'
 import TransactionsTable from '@/components/transactions/TransactionsTable.vue'
 import Purchases from '@/components/transactions/PurchasesPage.vue';
@@ -33,26 +38,36 @@ const router = createRouter({
       component: Board
     },
     {
-        path: '/multi',
-        name: 'multiPlayerGames',
-        component: MultiPlayerGames
+      path: '/multi',
+      name: 'multiPlayerGames',
+      component: MultiPlayerGames
     },
     {
-        path: '/history',
-        name: 'history',
-        component: HistoryTable
+      path: '/history',
+      name: 'history',
+      component: HistoryTable
     },
     {
-            path: '/transactions',
-            name: 'transactions',
-            component: TransactionsTable
-        },
-        {
-            path: '/purchase',
-            name: 'Purchase',
-            component: Purchases,
-        },
-],
+      path: '/scoreboardpersonal',
+      name: 'scoreboardPersonal',
+      component: ScorePersonal
+    },
+    {
+      path: '/scoreboardglobal',
+      name: 'scoreboardGlobal',
+      component: ScoreGlobal
+    },
+    {
+      path: '/transactions',
+      name: 'transactions',
+      component: TransactionsTable
+    },
+    {
+      path: '/purchase',
+      name: 'Purchase',
+      component: Purchases,
+    },
+  ],
 })
 
 let firstTime = true
@@ -60,19 +75,19 @@ let firstTime = true
 router.beforeEach(async (to, from, next) => {
   const storeAuth = useAuthStore()
 
-  if (firstTime ) {
+  if (firstTime) {
     firstTime = false
-    if (localStorage.getItem('token') != null){
+    if (localStorage.getItem('token') != null) {
       await storeAuth.restoreLogin()
-      
+
     }
 
-    if (to.name == 'game' ){
+    if (to.name == 'game') {
       router.push({ name: "singlePlayerGames" });
     }
 
   }
-  
+
   next()
 })
 export default router
