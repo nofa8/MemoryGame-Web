@@ -6,9 +6,10 @@ import { useTransactionStore } from '@/stores/transaction';
 import PurchaseIcon from '@/assets/purchase.svg';
 import InternalIcon from '@/assets/internal.svg';
 import BonusIcon from '@/assets/bonus.svg';
+import { useAuthStore } from '@/stores/auth';
 
 const expandedTransactionId = ref(null);
-
+const storeAuth = useAuthStore()
 function toggleDetails(id) {
     expandedTransactionId.value = expandedTransactionId.value === id ? null : id;
 }
@@ -86,7 +87,7 @@ onMounted(() => {
             shadow-md 
             hover:shadow-lg
         ">
-            Fazer Compra
+            Buy Coins
         </button>
     </div>
 
@@ -113,17 +114,21 @@ onMounted(() => {
                             {{ transaction.transaction_datetime ?
                                 transactionsStore.formatDate(transaction.transaction_datetime) : '' }}
                         </p>
-                        <p v-if="transaction.game_id != null">ID do Jogo: {{ transaction.game_id ? transaction.game_id :
-                            'Sem jogo' }}</p>
-                        <p :class="{
+                        <p v-if="transaction.game_id != null">GAME ID: {{ transaction.game_id }}</p>
+
+                        <p v-if="storeAuth.userType == 'A'">USER ID : {{ transaction.user_id }}</p>
+
+
+
+                        <p v-if="expandedTransactionId === transaction.id" :class="{
                             'text-blue-500': transaction.type === 'B',
                             'text-yellow-500': transaction.type === 'P',
                             'text-orange-500': transaction.type === 'I'
                         }">
                             {{
-                                transaction.type === 'B' ? 'Bônus' :
-                                    transaction.type === 'P' ? 'Compras' :
-                                        transaction.type === 'I' ? 'Interno' : ''
+                                transaction.type === 'B' ? 'Bonus' :
+                                    transaction.type === 'P' ? 'Purchase' :
+                                        transaction.type === 'I' ? 'Internal' : ''
                             }}
                         </p>
                         <p v-if="transaction.euros != null"
@@ -144,10 +149,9 @@ onMounted(() => {
                 <!-- Detalhes adicionais da transação -->
                 <div v-if="expandedTransactionId === transaction.id && transaction.type == 'P'"
                     class="p-4 border-t mt-2">
-                    <p v-if="transaction.payment_type">Tipo de Pagamento: {{ transaction.payment_type }}</p>
-                    <p v-if="transaction.payment_reference">Referência de Pagamento: {{ transaction.payment_reference }}
+                    <p v-if="transaction.payment_type">Payment type: {{ transaction.payment_type }}</p>
+                    <p v-if="transaction.payment_reference">Payment Reference: {{ transaction.payment_reference }}
                     </p>
-                    <p v-if="transaction.custom">Dados Personalizados: {{ transaction.custom }}</p>
                 </div>
             </div>
 

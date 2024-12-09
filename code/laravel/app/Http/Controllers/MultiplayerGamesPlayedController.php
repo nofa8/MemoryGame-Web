@@ -160,10 +160,12 @@ class MultiplayerGamesPlayedController extends Controller
 
         $game->status = $validated['status'];
         if ($validated['status'] === 'E') {
-            if ((!array_key_exists('turns', $validated) ||
-                !array_key_exists('pairs_discovered', $validated)
-                || !array_key_exists('won', $validated) ||
-                !array_key_exists('user_id', $validated))) {
+            if (
+                (!array_key_exists('turns', $validated) ||
+                    !array_key_exists('pairs_discovered', $validated)
+                    || !array_key_exists('won', $validated) ||
+                    !array_key_exists('user_id', $validated))
+            ) {
                 return response()->json(['error' => 'Incomplete request!'], 400);
             }
 
@@ -197,7 +199,7 @@ class MultiplayerGamesPlayedController extends Controller
 
         }
         $game->save();
-        return response()->json(['success' => 'Multiplayer game updated successfully','Game'=> new GameResource($game)]);
+        return response()->json(['success' => 'Multiplayer game updated successfully', 'Game' => new GameResource($game)]);
     }
 
 

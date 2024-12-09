@@ -89,6 +89,15 @@ onMounted(() => {
   <div class="p-4 sm:p-8 mx-auto max-w-full lg:max-w-7xl min-h-screen space-y-6">
     <!-- Header -->
     <header
+<!--// testeMergeTransactions
+
+      class="flex flex-col sm:flex-row items-center justify-between py-4 px-6 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 text-white rounded-lg shadow-lg space-y-4 sm:space-y-0">
+      <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
+        <img src="/logo.png" alt="Memory Game Logo" class="w-12 h-12 rounded-full shadow-md" />
+        <h1 class="text-xl sm:text-3xl font-bold tracking-wide text-center sm:text-left">
+          Memory Game
+        </h1>
+-->
       class="flex items-center justify-between py-4 px-6 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 text-white rounded-lg shadow-lg">
       <div class="flex items-center space-x-4">
         <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
@@ -101,6 +110,7 @@ onMounted(() => {
       </div>
       <!-- Music Icon -->
       <button v-show="!firstTime" @click="toggleMusic" class="flex items-center space-x-2 text-white">
+
           <span v-if="!isMusicPlaying">
             <!-- Playing Icon -->
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
@@ -119,7 +129,7 @@ onMounted(() => {
         </button>
       <p class="text-sm sm:text-lg text-center sm:text-right">
         <span v-if="storeAuth.user">
-          Welcome, {{ storeAuth.userFirstLastName }}
+          Welcome, {{ storeAuth.userFirstLastName }}. -> {{ storeAuth.userbrain_coins_balance }}
           <img v-if="storeAuth.user.userPhotoUrl" :src="storeAuth.user.userPhotoUrl" alt="User Photo"
             class="rounded-full w-8 h-8 ml-2 inline-block" />
         </span>
@@ -152,6 +162,7 @@ onMounted(() => {
           active-class="bg-red-800 hover:bg-red-800">
           History
         </RouterLink>
+
         <div class="relative">
           <button @click="isDropdownOpen = !isDropdownOpen"
             class="px-6 py-3 rounded-md text-white bg-orange-600 hover:bg-orange-700 transition-all shadow-md">

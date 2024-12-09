@@ -50,26 +50,37 @@ class TransactionController extends Controller
 
     public function store(StoreTransactionRequest $request)
     {
-        $validatedData = $request->validated();
-        $validatedData['transaction_datetime'] = now();
+        try {
+            $validatedData = $request->validated();
+            $validatedData['transaction_datetime'] = now();
+            if ($validatedData['type'] == 'P') {
+                $paymentResult = $this->processPayment(
+                    $validatedData['payment_type'],
+                    $validatedData['payment_reference'],
+                    $validatedData['euros']
+                );
 
+                if (!$paymentResult['success']) {
+                    return response()->json([
+                        'message' => $paymentResult['message']
+                    ], $paymentResult['status'] ?? 500);
+                } else {
+                    $user = $request->user();
+                    $user->brain_coins_balance += $validatedData['brain_coins'];
+                    $user->save();
+                }
+            }
 
-        $paymentResult = $this->processPayment(
-            $validatedData['payment_type'],
-            $validatedData['payment_reference'],
-            $validatedData['euros']
-        );
-
-        if (!$paymentResult['success']) {
+            $transaction = Transaction::create($validatedData);
+            return new TransactionResource($transaction);
+        } catch (\Exception $ex) {
             return response()->json([
-                'message' => $paymentResult['message'],
-                'error' => $paymentResult['error'] ?? null,
-            ], $paymentResult['status'] ?? 500);
+                'message' => 'Unknown error'
+            ], 500);
         }
-
-        $transaction = Transaction::create($validatedData);
-        return new TransactionResource($transaction);
     }
+
+
 
     public function processPayment($type, $reference, $value)
     {
@@ -87,25 +98,25 @@ class TransactionController extends Controller
                 // Processar sucesso
                 return [
                     'success' => true,
-                    'message' => 'Pagamento processado com sucesso.',
-                    'data' => $response->json(),
+                    'message' => $response->json('message', 'Payment processed successfully'),
+                    'status' => $response->status(),
                 ];
             } else {
                 // Processar erros específicos
                 return [
                     'success' => false,
-                    'message' => $response->json('message', 'Erro desconhecido.'),
+                    'message' => $response->json('message', 'Unknown error'),
                     'status' => $response->status(),
                 ];
             }
         } catch (\Exception $e) {
-            // Tratar erros de conexão ou outros problemas
             return [
                 'success' => false,
-                'message' => 'Erro ao conectar ao serviço de pagamentos.',
-                'error' => $e->getMessage(),
+                'message' => 'Error connecting to the payments service.',
+                'status' => 500
             ];
         }
+
     }
 
 }

@@ -37,76 +37,6 @@ export const useTransactionStore = defineStore("transaction", () => {
     };
 
 
-
-    // Fetch a specific transaction
-    const fetchTransaction = async (transactionId) => {
-
-        try {
-            const response = await axios.get(`transactions/${transactionId}`);
-            const index = getIndexOfTransaction(transactionId);
-            if (index > -1) {
-                transactions.value[index] = Object.assign({}, response.data.data);
-            }
-            return response.data.data;
-        } catch (e) {
-            handleError(e);
-        }
-    };
-
-    // Insert a new transaction
-    const insertTransaction = async (transaction) => {
-
-        try {
-            const response = await axios.post("transactions", transaction);
-            transactions.value.push(response.data.data);
-            return response.data.data;
-        } catch (e) {
-            handleError(e);
-            return false;
-        }
-    };
-
-    // Update an existing transaction
-    const updateTransaction = async (transaction) => {
-
-        try {
-            const response = await axios.put(
-                `transactions/${transaction.id}`,
-                transaction
-            );
-            const index = getIndexOfTransaction(transaction.id);
-            if (index > -1) {
-                transactions.value[index] = Object.assign({}, response.data.data);
-            }
-            return response.data.data;
-        } catch (e) {
-            handleError(e);
-            return false;
-        }
-    };
-
-    // Delete a transaction
-    const deleteTransaction = async (transaction) => {
-        storeError.resetMessages();
-        try {
-            await axios.delete(`transactions/${transaction.id}`);
-            const index = getIndexOfTransaction(transaction.id);
-            if (index > -1) {
-                transactions.value.splice(index, 1);
-            }
-            return true;
-        } catch (e) {
-            handleError(e);
-            return false;
-        }
-    };
-
-
-    // Get index of a transaction
-    const getIndexOfTransaction = (transactionId) => {
-        return transactions.value.findIndex((t) => t.id === transactionId);
-    };
-
     const formatTime = (totalTime) => {
         const minutes = Math.floor(totalTime / 60)
         const seconds = Math.round(totalTime % 60).toString().padStart(2, '0')
@@ -135,9 +65,5 @@ export const useTransactionStore = defineStore("transaction", () => {
         formatTime,
         formatDate,
         fetchTransactions,
-        fetchTransaction,
-        insertTransaction,
-        updateTransaction,
-        deleteTransaction,
     };
 });
