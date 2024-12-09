@@ -13,6 +13,7 @@ class Transaction extends Model
 
     public $timestamps = false;
 
+
     protected $fillable = [
         'type',
         'transaction_datetime',
@@ -30,4 +31,15 @@ class Transaction extends Model
     ];
 
 
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function game(): BelongsTo
+    {
+        return $this->belongsTo(Game::class);
+    }
+  
 }

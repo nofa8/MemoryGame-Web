@@ -1,103 +1,120 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import Board from './Board.vue'
-import { useMemoryGame } from './memory'
+import { ref } from 'vue'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 
-// Array of board configurations
-const boardConfigurations = [
-  { name: '3x4', cols: 4, rows: 3 },
-  { name: '4x4', cols: 4, rows: 4 },
-  { name: '5x4', cols: 4, rows: 5 },
-  { name: '6x6', cols: 6, rows: 6 }
-]
-const board = ref(null)
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import axios from 'axios'
+import { useErrorStore } from '@/stores/error'
+import { FingerprintSpinner } from 'epic-spinners'
+import { useBoardsStore } from '@/stores/board'
 
-const currentStatus = ref(null)
+const storeAuth = useAuthStore()
+const storeError = useErrorStore()
+const router = useRouter()
 
-const statusChanged = (newStatus) => {
-  currentStatus.value = newStatus
-}
+const isLoading = ref(false)
+const boardsStore = useBoardsStore()
+boardsStore.loadBoards()
 
-// Selected board configuration
-const selectedBoard = ref(boardConfigurations[0])
+const startGame = async (board) => {
+  isLoading.value = true
+  try {
+    if (!storeAuth.user) {
+      router.push({ name: 'game' })
+      return
+    }
 
-// Game status message
-const statusMessage = computed(() => {
-  if (currentStatus.value === 'E') {
-    return `Congratulations! You completed the game in ${moves.value} moves.`
+    const payload = {
+      created_user_id: storeAuth.user.id,
+      type: 'S',
+      board_id: board.id
+    }
+
+    const response = await axios.post('/games', payload)
+    const gameData = response.data.data
+    
+    router.push({
+      name: 'game',
+      query: {
+        game_id: gameData.id,
+        board_cols: board.cols,
+        board_rows: board.rows
+      }
+    })
+  } catch (e) {
+    storeError.setErrorMessages(
+      e.response?.data?.message || 'An error occurred',
+      e.response?.data?.errors || {},
+      e.response?.status || 500,
+      'Error Starting Game'
+    )
+  } finally {
+    isLoading.value = false
   }
-  // return `Matches: ${matches.value}/${selectedBoard.value.pairs}. Moves: ${moves.value}`
-})
-
-// Restart the game
-const restart = () => {
-  board.value.start()
 }
-onMounted(() => {
-  restart()
-})
+
+const checkAccessBoard = (board) => {
+  return (board.cols === 3) || (storeAuth.user && storeAuth.user.brain_coins_balance  >= 1)
+}
 </script>
 
 <template>
-  <div class="p-8 mx-auto max-w-3xl min-w-96 bg-white shadow-lg rounded-lg">
-    <div class="mb-6">
-      <label class="block text-lg font-semibold mb-2 text-gray-800">Choose Board Size:</label>
-      <select
-        v-model="selectedBoard"
-        class="w-full p-3 rounded-lg border-gray-300 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option v-for="config in boardConfigurations" :key="config.name" :value="config">
-          {{ config.name }}
-        </option>
-      </select>
-    </div>
-
-    <!-- Game Status -->
-    <div v-if="currentStatus !== 'idle'" class="my-4">
-      <p class="text-lg font-semibold text-gray-800">{{ statusMessage }}</p>
-    </div>
-
-    <!-- Start/Play Button -->
-    <div class="my-6 text-center">
-      <button
-        @click="startGame"
-        class="rounded-lg bg-green-600 text-white py-2 px-6 mb-4 hover:bg-green-700 transition duration-300 ease-in-out transform hover:scale-105"
-      >
-        Start Game
-      </button>
-    </div>
-
-    <!-- Victory Screen -->
+  <div class="relative">
+    <!-- Loading Spinner -->
     <div
-      v-if="currentStatus === 'E'"
-      class="my-6 p-6 bg-green-100 rounded-xl flex items-center justify-between shadow-xl"
+      v-if="isLoading"
+      class="absolute inset-0 flex flex-col justify-center items-center bg-gray-900 bg-opacity-80 z-50"
     >
-      <div class="flex-grow text-center">
-        <h2 class="text-2xl font-bold text-green-800 mb-2">Congratulations!</h2>
-        <p class="text-lg text-green-700">{{ statusMessage }}</p>
-      </div>
-
-      <button
-        type="button"
-        class="rounded bg-green-700 py-2 px-3 m-0.5 text-white flex shadow-lg shadow-green-900"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="size-6"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-          />
-        </svg>
-        <span class="ps-2 text-base" @click="restart">Restart</span>
-      </button>
+      <div class="text-xl text-white mb-4 animate-pulse">Creating your game...</div>
+      <fingerprint-spinner :animation-duration="1500" :size="80" color="#4f46e5" />
     </div>
-    <Board ref="board" @statusChanged="statusChanged"></Board>
+
+    <div class="flex flex-col justify-center items-center p-6 space-y-8">
+      <!-- Card -->
+      <Card
+        class="w-full max-w-5xl rounded-lg shadow-xl bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-800 dark:to-gray-900"
+      >
+        <CardHeader class="p-6">
+          <CardTitle class="text-2xl font-semibold text-center text-gray-800 dark:text-white">
+            Choose a Board
+          </CardTitle>
+          <CardDescription class="text-center text-gray-600 dark:text-gray-400">
+            Select the board you want to play on and start your adventure!
+          </CardDescription>
+        </CardHeader>
+        <CardContent class="p-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Board Options -->
+            <div
+              v-for="board in boardsStore.boards"
+              :key="board.id"
+              class="relative group flex flex-col items-center justify-center p-6 rounded-lg cursor-pointer transition-all transform hover:scale-105 shadow-md"
+              :class="
+                checkAccessBoard(board)
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-400 text-gray-700 cursor-not-allowed'
+              "
+              @click="checkAccessBoard(board) && startGame(board)"
+            >
+              <h2 class="text-lg font-bold mb-2">Board: {{ board.cols }} x {{ board.rows }}</h2>
+              <p v-if="!checkAccessBoard(board)" class="text-sm italic">Unavailable</p>
+
+              <!-- Lock Icon for Unavailable Boards -->
+              <svg
+                v-if="!checkAccessBoard(board)"
+                xmlns="http://www.w3.org/2000/svg"
+                class="absolute bottom-4 right-4 h-6 w-6 fill-current text-gray-200 opacity-50 group-hover:opacity-75"
+                viewBox="0 -960 960 960"
+              >
+                <path
+                  d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z"
+                />
+              </svg>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   </div>
 </template>
