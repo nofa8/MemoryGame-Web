@@ -77,6 +77,22 @@ class GameController extends Controller
         ]);
     }
 
+
+
+    public function indexHistoryTAES(Request $request)
+    {
+        $userId = $request->user()->id;
+
+        
+        $games = Game::where('created_user_id', $userId)
+            ->with(['creator'])
+            ->orderBy('began_at', 'desc')
+            ->take(10);
+        
+
+        return HistoryResource::collection($games);
+    }
+
     public function indexScoreboardPersonal(Request $request)
     {
         $userId = $request->user()->id;
