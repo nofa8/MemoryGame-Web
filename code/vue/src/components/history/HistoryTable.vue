@@ -12,6 +12,7 @@ onMounted(() => {
 
 <template>
     <div class="container mx-auto p-4">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">History</h2>
         <div class="overflow-x-auto rounded-lg shadow-md">
             <table class="w-full text-sm text-left text-gray-500">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-100">

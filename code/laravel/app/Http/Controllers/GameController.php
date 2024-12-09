@@ -7,6 +7,7 @@ use App\Http\Resources\GameResource;
 use App\Http\Resources\HistoryResource;
 use App\Models\Game;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class GameController extends Controller
 {
@@ -29,14 +30,14 @@ class GameController extends Controller
     public function indexHistory(Request $request)
     {
         $userId = $request->user()->id;
-        
+
         // se o user for admin ele pode ver todos os jogos
         if ($request->user()->type == 'A') {
             $games = Game::with(['creator', 'winner', 'board', 'multiplayerGamesPlayed.user'])
                 ->orderBy('began_at', 'desc')
                 ->paginate(10);
-                
-        // se não ele só pode ver os jogos que ele criou ou participou
+
+            // se não ele só pode ver os jogos que ele criou ou participou
         } else {
             $games = Game::where('created_user_id', $userId)
                 ->orWhereHas('multiplayerGamesPlayed', function ($query) use ($userId) {
@@ -59,6 +60,55 @@ class GameController extends Controller
             ]
         ]);
     }
+
+    public function indexScoreboardPersonal(Request $request)
+    {
+        $userId = $request->user()->id;
+
+        // melhor tempo para cada board em jogos singleplayer de um user
+        $bestTimes = Game::where('created_user_id', $userId)
+            ->where('type', 'S')
+            ->with('board')
+            ->select('board_id', DB::raw('MIN(total_time) as total_time'))
+            ->groupBy('board_id')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [$item->board_id => [
+                    'total_time' => $item->total_time,
+                    'board_cols' => $item->board->board_cols,
+                    'board_rows' => $item->board->board_rows,
+                ]];
+            });
+
+        // menor numero de jogadas para cada board em jogos singleplayer de um user
+        $minTurns = Game::where('created_user_id', $userId)
+            ->where('type', 'S')
+            ->with('board')
+            ->select('board_id', DB::raw('MIN(total_turns_winner) as total_turns_winner'))
+            ->groupBy('board_id')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [$item->board_id => [
+                    'total_turns_winner' => $item->total_turns_winner,
+                    'board_cols' => $item->board->board_cols,
+                    'board_rows' => $item->board->board_rows,
+                ]];
+            });
+
+        // vitórias e derrotas em jogos multiplayer de um user
+        $multiplayerStats = DB::table('multiplayer_games_played')
+            ->where('user_id', $userId)
+            ->selectRaw('SUM(CASE WHEN player_won = 1 THEN 1 ELSE 0 END) as total_victories')
+            ->selectRaw('SUM(CASE WHEN player_won = 0 THEN 1 ELSE 0 END) as total_losses')
+            ->first();
+
+        return response()->json([
+            'best_times' => $bestTimes,
+            'min_turns' => $minTurns,
+            'multiplayer_stats' => $multiplayerStats
+        ]);
+    }
+
     /**
      * Store a newly created resource in storage.
      */
