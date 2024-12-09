@@ -151,6 +151,7 @@ onMounted(() => {
         </span>
         <span v-else> Ready to test your memory? </span>
       </p>
+
     </header>
 
     <!-- Navigation -->
@@ -183,6 +184,15 @@ onMounted(() => {
           active-class="bg-red-800 hover:bg-red-800"
         >
           History
+        </RouterLink>
+        <RouterLink
+         v-if="storeAuth.user"
+        :to="{ name: 'transactions' }"
+        class="px-6 py-3 rounded-md text-white bg-yellow-500 hover:bg-pink-500 transition-all shadow-md"
+        active-class="bg-pink-600 hover:bg-pink-600"
+
+        >
+          Coins
         </RouterLink>
       </div>
 

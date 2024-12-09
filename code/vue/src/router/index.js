@@ -4,6 +4,9 @@ import Login from '@/components/Login.vue'
 import MultiPlayerGames from '@/components/multiPlayer/MultiPlayerGames.vue'
 import Board from '@/components/singlePlayer/Board.vue'
 import SinglePlayerGame from '@/components/singlePlayer/SinglePlayerGame.vue'
+import TransactionsTable from '@/components/transactions/TransactionsTable.vue'
+import Purchases from '@/components/transactions/PurchasesPage.vue';
+
 import { useAuthStore } from '@/stores/auth'
 import { createRouter, createWebHistory } from 'vue-router'
 
@@ -39,6 +42,16 @@ const router = createRouter({
         name: 'history',
         component: HistoryTable
     },
+    {
+            path: '/transactions',
+            name: 'transactions',
+            component: TransactionsTable
+        },
+        {
+            path: '/purchase',
+            name: 'Purchase',
+            component: Purchases,
+        },
 ],
 })
 
