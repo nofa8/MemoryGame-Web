@@ -2,7 +2,12 @@
 import HistoryTable from '@/components/history/HistoryTable.vue'
 import Login from '@/components/Login.vue'
 import MultiPlayerGames from '@/components/multiPlayer/MultiPlayerGames.vue'
+
+import ScoreGlobal from '@/components/scoreBoards/ScoreGlobal.vue'
+import ScorePersonal from '@/components/scoreBoards/ScorePersonal.vue'
+
 import Board from '@/components/singlePlayer/Board.vue'
+
 import SinglePlayerGame from '@/components/singlePlayer/SinglePlayerGame.vue'
 import TransactionsTable from '@/components/transactions/TransactionsTable.vue'
 import Purchases from '@/components/transactions/PurchasesPage.vue';
@@ -43,6 +48,16 @@ const router = createRouter({
         component: HistoryTable
     },
     {
+        path: '/scoreboardPersonal',
+        name: 'scoreboardPersonal',
+        component: ScorePersonal
+    },
+    {
+        path: '/scoreboardGlobal',
+        name: 'scoreboardGlobal',
+        component: ScoreGlobal
+    },
+
             path: '/transactions',
             name: 'transactions',
             component: TransactionsTable
