@@ -37,7 +37,15 @@ class StoreTransactionRequest extends FormRequest
                     }
                 },
             ],
-            'brain_coins' => 'required|integer',
+            'brain_coins' => [
+                'required',
+                'integer',
+                function ($attribute, $value, $fail) {
+                    if ($value < 10 || $value % 10 != 0) {
+                        $fail("The {$attribute} must be a multiple of 10 and greater than or equal to 10.");
+                    }
+                }
+            ],
             'custom' => 'nullable|json',
         ];
     }
