@@ -127,37 +127,48 @@ class GameController extends Controller
 
     public function indexScoreboardGlobal()
     {
-        $bestTimes = Game::where('type', 'S')
+        $bestTimes = Game::where([['type', 'S'], ['total_time', '<>', null]])
             ->select('board_id', DB::raw('MIN(total_time) as total_time'), 'created_user_id')
             ->with(['board', 'creator'])
+            ->whereHas('creator', function ($query) {
+                $query->whereNull('deleted_at');
+            })
             ->groupBy('board_id', 'created_user_id')
+            ->orderBy('total_time', 'desc')
             ->get()
             ->mapWithKeys(function ($item) {
                 return [$item->board_id => [
                     'total_time' => $item->total_time,
                     'board_cols' => $item->board->board_cols,
                     'board_rows' => $item->board->board_rows,
-                    'nickname' => $item->creator->nickname,
+                    'nickname' => $item->creator?->nickname,
                 ]];
             });
 
-        $minTurns = Game::where('type', 'S')
+        $minTurns = Game::where([['type', 'S'], ['total_turns_winner', '<>', null]])
             ->select('board_id', DB::raw('MIN(total_turns_winner) as total_turns'), 'created_user_id')
             ->with(['board', 'creator'])
+            ->whereHas('creator', function ($query) {
+                $query->whereNull('deleted_at');
+            })
             ->groupBy('board_id', 'created_user_id')
+            ->orderBy('total_turns', 'desc')
             ->get()
             ->mapWithKeys(function ($item) {
                 return [$item->board_id => [
                     'total_turns' => $item->total_turns,
                     'board_cols' => $item->board->board_cols,
                     'board_rows' => $item->board->board_rows,
-                    'nickname' => $item->creator->nickname,
+                    'nickname' => $item->creator?->nickname,
                 ]];
             });
 
         $topPlayers = Game::where('type', 'M')
             ->select('winner_user_id', DB::raw('COUNT(*) as total_victories'), DB::raw('MAX(ended_at) as first_victory'))
             ->whereNotNull('winner_user_id')
+            ->whereHas('winner', function ($query) {
+                $query->whereNull('deleted_at');
+            })
             ->groupBy('winner_user_id')
             ->with('winner')
             ->orderByDesc('total_victories')
@@ -167,7 +178,7 @@ class GameController extends Controller
             ->map(function ($item) {
                 return [
                     'user_id' => $item->winner_user_id,
-                    'nickname' => $item->winner->nickname,
+                    'nickname' => $item?->winner?->nickname,
                     'total_victories' => $item->total_victories
                 ];
             });

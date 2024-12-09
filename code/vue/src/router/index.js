@@ -38,36 +38,36 @@ const router = createRouter({
       component: Board
     },
     {
-        path: '/multi',
-        name: 'multiPlayerGames',
-        component: MultiPlayerGames
+      path: '/multi',
+      name: 'multiPlayerGames',
+      component: MultiPlayerGames
     },
     {
-        path: '/history',
-        name: 'history',
-        component: HistoryTable
+      path: '/history',
+      name: 'history',
+      component: HistoryTable
     },
     {
-        path: '/scoreboardPersonal',
-        name: 'scoreboardPersonal',
-        component: ScorePersonal
+      path: '/scoreboardpersonal',
+      name: 'scoreboardPersonal',
+      component: ScorePersonal
     },
     {
-        path: '/scoreboardGlobal',
-        name: 'scoreboardGlobal',
-        component: ScoreGlobal
+      path: '/scoreboardglobal',
+      name: 'scoreboardGlobal',
+      component: ScoreGlobal
     },
-
-            path: '/transactions',
-            name: 'transactions',
-            component: TransactionsTable
-        },
-        {
-            path: '/purchase',
-            name: 'Purchase',
-            component: Purchases,
-        },
-],
+    {
+      path: '/transactions',
+      name: 'transactions',
+      component: TransactionsTable
+    },
+    {
+      path: '/purchase',
+      name: 'Purchase',
+      component: Purchases,
+    },
+  ],
 })
 
 let firstTime = true
@@ -75,19 +75,19 @@ let firstTime = true
 router.beforeEach(async (to, from, next) => {
   const storeAuth = useAuthStore()
 
-  if (firstTime ) {
+  if (firstTime) {
     firstTime = false
-    if (localStorage.getItem('token') != null){
+    if (localStorage.getItem('token') != null) {
       await storeAuth.restoreLogin()
-      
+
     }
 
-    if (to.name == 'game' ){
+    if (to.name == 'game') {
       router.push({ name: "singlePlayerGames" });
     }
 
   }
-  
+
   next()
 })
 export default router
