@@ -6,6 +6,7 @@ import { useErrorStore } from '@/stores/error'
 export const useScoreboardStore = defineStore('scoreboard', () => {
     const bestTimes = ref({});
     const minTurns = ref({});
+    const topPlayers = ref([]);
     const multiplayerStats = ref({
         total_victories: 0,
         total_losses: 0
@@ -30,11 +31,31 @@ export const useScoreboardStore = defineStore('scoreboard', () => {
         }
     };
 
+    const fetchScoreGlobal = async () => {
+        try {
+            const response = await axios.get('/scoreboardGlobal');
+
+            bestTimes.value = response.data.best_times || {};
+            minTurns.value = response.data.min_turns || {};
+            topPlayers.value = response.data.top_players || [];
+        } catch (error) {
+            const errorStore = useErrorStore();
+            errorStore.setErrorMessages('Failed to fetch global scoreboard');
+            console.error('Failed to fetch scoreboard:', error);
+
+            bestTimes.value = {};
+            minTurns.value = {};
+            topPlayers.value = [];
+        }
+    }
+
     return {
         bestTimes,
         minTurns,
+        topPlayers,
         multiplayerStats,
+        fetchScoreGlobal,
         formatTime,
         fetchScoreboardPersonal
-    }
-})
+    };
+});

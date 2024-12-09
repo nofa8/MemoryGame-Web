@@ -33,14 +33,14 @@ onMounted(() => {
             </table>
         </div>
         <div class="flex justify-between mt-4">
-            <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded" :disabled="historyStore.currentPage === 1"
+            <button class="px-4 py-2 bg-blue-600 text-white rounded" :disabled="historyStore.currentPage === 1"
                 @click="historyStore.fetchGameHistory(historyStore.currentPage - 1)">
                 Previous
             </button>
             <span class="self-center">
                 Page {{ historyStore.currentPage }} of {{ historyStore.lastPage }}
             </span>
-            <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded"
+            <button class="px-4 py-2 bg-blue-600 text-white rounded"
                 :disabled="historyStore.currentPage === historyStore.lastPage"
                 @click="historyStore.fetchGameHistory(historyStore.currentPage + 1)">
                 Next

@@ -109,6 +109,60 @@ class GameController extends Controller
         ]);
     }
 
+    public function indexScoreboardGlobal()
+    {
+        $bestTimes = Game::where('type', 'S')
+            ->select('board_id', DB::raw('MIN(total_time) as total_time'), 'created_user_id')
+            ->with(['board', 'creator'])
+            ->groupBy('board_id', 'created_user_id')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [$item->board_id => [
+                    'total_time' => $item->total_time,
+                    'board_cols' => $item->board->board_cols,
+                    'board_rows' => $item->board->board_rows,
+                    'nickname' => $item->creator->nickname,
+                ]];
+            });
+
+        $minTurns = Game::where('type', 'S')
+            ->select('board_id', DB::raw('MIN(total_turns_winner) as total_turns'), 'created_user_id')
+            ->with(['board', 'creator'])
+            ->groupBy('board_id', 'created_user_id')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [$item->board_id => [
+                    'total_turns' => $item->total_turns,
+                    'board_cols' => $item->board->board_cols,
+                    'board_rows' => $item->board->board_rows,
+                    'nickname' => $item->creator->nickname,
+                ]];
+            });
+
+        $topPlayers = Game::where('type', 'M')
+            ->select('winner_user_id', DB::raw('COUNT(*) as total_victories'), DB::raw('MAX(ended_at) as first_victory'))
+            ->whereNotNull('winner_user_id')
+            ->groupBy('winner_user_id')
+            ->with('winner')
+            ->orderByDesc('total_victories')
+            ->orderBy('first_victory') 
+            ->take(5)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'user_id' => $item->winner_user_id,
+                    'nickname' => $item->winner->nickname,
+                    'total_victories' => $item->total_victories
+                ];
+            });
+
+        return response()->json([
+            'best_times' => $bestTimes,
+            'min_turns' => $minTurns,
+            'top_players' => $topPlayers,
+        ]);
+    }
+
     /**
      * Store a newly created resource in storage.
      */

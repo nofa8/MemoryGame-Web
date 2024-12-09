@@ -13,6 +13,7 @@ Route::post('/auth/login', [AuthController::class, "login"]);
 Route::get('/boards', [BoardController::class, "index"]);
 Route::get('/games', [GameController::class, "indexFinished"]);
 Route::post('/games', [GameController::class, 'store']);
+Route::get('/scoreboardGlobal', [GameController::class, 'indexScoreboardGlobal']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     // Route::get('/users/me', function (Request $request) {return $request->user();});
