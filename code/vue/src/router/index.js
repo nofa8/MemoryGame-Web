@@ -66,11 +66,11 @@ let firstTime = true
 router.beforeEach(async (to, from, next) => {
   const storeAuth = useAuthStore()
 
+
   if (firstTime) {
     firstTime = false
     if (localStorage.getItem('token') != null) {
       await storeAuth.restoreLogin()
-
     }
 
     if (to.name == 'game') {
@@ -79,10 +79,10 @@ router.beforeEach(async (to, from, next) => {
 
   }
 
-  if (((to.name == 'profiles') || (to.name == 'profile')) && (!storeAuth.user)) { 
-    next({ name: 'login' }) 
-    return 
-    } 
+  if (((to.name == 'profiles') || (to.name == 'profile')) && (!storeAuth.user)) {
+    next({ name: 'login' })
+    return
+  }
 
   next()
 })

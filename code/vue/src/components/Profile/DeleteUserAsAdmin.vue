@@ -2,22 +2,19 @@
 import { ref } from 'vue';
 import axios from 'axios';
 import { useAuthStore } from '@/stores/auth';
-import { defineProps } from 'vue';
 
-const AuthStore = useAuthStore();
+//const authStore = useAuthStore()
 
-// Props and emits
 const props = defineProps({
-  user: { type: Object, required: true }
+    user: { type: Object, required: true }
 });
-
-const emit = defineEmits();
+const emit = defineEmits(['hidedeleteForm', 'accountDeleted', 'userDeleted']);
 
 const password = ref('');
 const errorMessage = ref('');
 const isSubmitting = ref(false);
 
-const handleDeleteAccount = () => {
+const handleDeleteAccount = async () => {
     if (!password.value) {
         errorMessage.value = 'Please enter your password to confirm deletion.';
         return;
@@ -26,36 +23,27 @@ const handleDeleteAccount = () => {
     isSubmitting.value = true;
     errorMessage.value = '';
 
-    // Make sure that the user is authenticated and the ID matches
-    
-
-    // Proceed with deleting the user account
-    axios
-        .delete(`/auth/admin/${props.user.nickname}`, {  // Pass the specific user ID to delete
-            data: {
-                password: password.value,
-            },
-        })
-        .then(() => {
-            console.log('Account deleted successfully.');
-             // Log out the authenticated user after deletion
-            emit('hidedeleteForm'); // Hide the form after successful deletion
-        })
-        .catch((error) => {
-            if (error.response && error.response.data) {
-                errorMessage.value = error.response.data.message || 'Failed to delete the account.';
-            } else {
-                errorMessage.value = 'An unexpected error occurred.';
-            }
-        })
-        .finally(() => {
-            isSubmitting.value = false;
+    try {
+        const response = await axios.delete(`/auth/admin/${props.user.nickname}`, {
+            data: { password: password.value }
         });
 
+        if (response.status === 200) {
+            props.user.deleted_at = response.data.user.deleted_at;
+          // Emit the updated user data
+            emit('userDeleted', props.user.id);
+            emit('accountDeleted', props.user); // Notify parent about the deletion
+            emit('hidedeleteForm'); // Hide the delete form
+        }
+    } catch (error) {
+        errorMessage.value = error.response?.data?.message || 'Failed to delete the account.';
+    } finally {
+        isSubmitting.value = false;
+    }
 };
 
 const handleCancelDelete = () => {
-    emit('hidedeleteForm'); // Emit event to hide the delete confirmation form
+    emit('hidedeleteForm');
 };
 </script>
 
@@ -67,7 +55,6 @@ const handleCancelDelete = () => {
         </p>
 
         <div class="space-y-4">
-            <!-- Password Input -->
             <div>
                 <label for="password" class="block text-gray-700">Password</label>
                 <input
@@ -79,12 +66,8 @@ const handleCancelDelete = () => {
                 <p v-if="errorMessage" class="text-red-500 text-sm mt-2">{{ errorMessage }}</p>
             </div>
 
-            <!-- Buttons -->
             <div class="flex justify-end space-x-4 mt-6">
-                <button
-                    @click="handleCancelDelete"
-                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-                >
+                <button @click="handleCancelDelete" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
                     Cancel
                 </button>
                 <button

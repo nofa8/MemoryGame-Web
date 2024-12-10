@@ -13,6 +13,7 @@ const createAdminform = ref(false);
 const searchQuery = ref('');
 const selectedUserType = ref(''); // '' for all, 'A' for Admin, 'P' for Player
 
+
 if (!authStore.user) {
     // Redirect to login if the user is not authenticated
     router.push("login");
@@ -51,6 +52,7 @@ const goToLogin = () => {
 };
 const toggleIncludeDeleted = () => {
     includeDeleted.value = includeDeleted.value ? '' : 'true'; // Toggle between '' and 'true'
+    filterUsers(); 
 };
 // Function to get user photo URL
 const getPhotoUrl = (photoFileName) => {
@@ -59,6 +61,20 @@ const getPhotoUrl = (photoFileName) => {
     }
     return `${axios.defaults.baseURL.replace('/api', '')}/storage/photos/anonymous.jpg`;
 };
+
+const handleUserDeleted = (deletedUserId) => {
+    // Remove the user from the list if includeDeleted is not enabled
+    if (!includeDeleted.value) {
+        authStore.users = authStore.users.filter(user => user.id !== deletedUserId);
+    } else {
+        // Optionally, update the deleted user's status if included in the list
+        const userIndex = authStore.users.findIndex(user => user.id === deletedUserId);
+        if (userIndex !== -1) {
+            authStore.users[userIndex].deleted_at = new Date().toISOString(); // Mark as deleted
+        }
+    }
+};
+
 </script>
 
 
@@ -107,7 +123,8 @@ const getPhotoUrl = (photoFileName) => {
             <div>
                 <!-- Iterate over users and pass the photo URL to ProfileInfo -->
                 <div v-for="userInfo in authStore.users" :key="userInfo.id" class="mb-6">
-                    <ProfileInfo :user="userInfo" :photo-url="getPhotoUrl(userInfo.photo_filename)" />
+                    <ProfileInfo  :key="userInfo.id" :user="userInfo"
+                        :photo-url="getPhotoUrl(userInfo.photo_filename)" @userDeleted="handleUserDeleted" />
                 </div>
             </div>
         </div>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\Request;
@@ -12,12 +13,9 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Builder;
 
+
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-
     public function indexAll(Request $request)
     {
         // Check if the user is an Admin
@@ -70,8 +68,6 @@ class UserController extends Controller
             return response()->json(['message' => 'Not Admin'], 403);
         }
     }
-
-
     // Method to delete a user as an admin by their nickname
     public function deleteUserAsAdmin(Request $request, $nickname)
     {
@@ -98,11 +94,15 @@ class UserController extends Controller
 
         // Soft delete the user (you can use forceDelete() for permanent deletion)
         $userToDelete->delete();
-
+       
+        
         // Optionally, you can also remove the user's associated data like photos, etc.
         // $userToDelete->delete();
 
-        return response()->json(['message' => 'User deleted successfully'], 200);
+        return response()->json([
+            'message' => 'Profile Deleted',
+            'user' => $userToDelete,
+        ]);
     }
 
 
