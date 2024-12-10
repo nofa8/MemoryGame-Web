@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 
 
 // Specific for TAES
-Route::get('/gamesTAES', [GameController::class, "index"]); // Get games
+Route::get('/gamesTAES', [GameController::class, "indexTAES"]); // Get games
 Route::post('/gamesTAES', [GameController::class, 'storeTAES']);
 
 
@@ -21,8 +21,6 @@ Route::post('/gamesTAES', [GameController::class, 'storeTAES']);
 Route::post('/auth/login', [AuthController::class, "login"]);
 
 Route::get('/boards', [BoardController::class, "index"]);
-Route::get('/games', [GameController::class, "indexFinished"]);
-Route::post('/games', [GameController::class, 'store']);
 Route::get('/scoreboardGlobal', [GameController::class, 'indexScoreboardGlobal']);
 
 
@@ -34,8 +32,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/auth/refreshtoken', [AuthController::class, 'refreshToken']);
     Route::get('/history', [GameController::class, 'indexHistory']);
 
+    ///////////////////////////TAES
     Route::get('/historyTAES', [GameController::class, 'indexHistoryTAES']);
-    
+
+    ///////////////////////////////////////////////////////
+
+
     Route::get('/scoreboardPersonal', [GameController::class, 'indexScoreboardPersonal']);
 
 
@@ -45,15 +47,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::prefix('games')->group(function () {
         Route::post('/', [GameController::class, 'store']); // Create a new game
-        Route::get('/{id}', [GameController::class, 'show']); // Get game details
         Route::put('/{id}', [GameController::class, 'update']); // Update game status
-        Route::delete('/{id}', [GameController::class, 'delete']); // Delete a game
     });
 
     Route::prefix('multiplayer-games')->group(function () {
-        Route::post('/', [MultiplayerGamesPlayedController::class, 'store']); 
-        Route::patch('/{id}', [MultiplayerGamesPlayedController::class, 'update']); 
-        Route::get('/{id}/players', [MultiplayerGamesPlayedController::class, 'listPlayers']); // Get players in a multiplayer game
+        Route::post('/', [MultiplayerGamesPlayedController::class, 'store']);
+        Route::patch('/{id}', [MultiplayerGamesPlayedController::class, 'update']);
     });
-
 });

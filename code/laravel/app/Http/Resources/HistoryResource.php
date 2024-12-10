@@ -5,7 +5,8 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class HistoryResource extends JsonResource {
+class HistoryResource extends JsonResource
+{
     /**
      * Transform the resource into an array.
      *
@@ -16,8 +17,8 @@ class HistoryResource extends JsonResource {
         return [
             'id' => $this->id,
             'type' => $this->type,
-            'status' => $this->status, 
-            'total_time' => $this->total_time, 
+            'status' => $this->status,
+            'total_time' => $this->total_time,
             'creator' => $this->creator->nickname,
             'winner' => $this?->winner?->nickname,
             'start_time' => $this->began_at,
