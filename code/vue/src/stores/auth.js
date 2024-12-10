@@ -13,6 +13,12 @@ export const useAuthStore = defineStore('auth', () => {
   const token = ref('')
   const socket = inject('socket')
 
+  const users = ref([])
+  const currentPage = ref(1)
+  const lastPage = ref(1)
+  const total = ref(0)
+  const perPage = ref(10)
+
   const userId = computed(() => {
     return user.value ? user.value.id : -1
   })
@@ -50,10 +56,12 @@ export const useAuthStore = defineStore('auth', () => {
   const userPhotoUrl = computed(() => {
     const photoFile = user.value ? (user.value.photoFileName ?? '') : ''
     if (photoFile) {
-      return axios.defaults.baseURL.replaceAll('/api', photoFile)
+      return axios.defaults.baseURL.replace('/api', photoFile)
     }
     return avatarNoneAssetURL
   })
+
+
 
   const clearUser = () => {
     resetIntervalToRefreshToken()
@@ -98,6 +106,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       await axios.post('auth/logout')
       clearUser()
+      //router.push("login")
       return true
     } catch (e) {
       clearUser()
@@ -168,6 +177,26 @@ export const useAuthStore = defineStore('auth', () => {
     return false
   }
 
+  const setUser = (userData) => {
+    user.value = userData
+  }
+  const fetchUsers = async ({ search = '', type = '', page = 1, include_deleted = false } = {}) => {
+    try {
+      // Construct the query string including include_deleted
+      const response = await axios.get(`/users?page=${page}&search=${search}&type=${type}&include_deleted=${include_deleted}`);
+
+      users.value = response.data.data;
+      currentPage.value = response.data.meta.current_page;
+      lastPage.value = response.data.meta.last_page;
+      total.value = response.data.meta.total;
+      perPage.value = response.data.meta.per_page;
+
+      
+    } catch (err) {
+      console.error('Failed to load profiles. Please try again later.', err);
+    }
+  };
+
   return {
     user,
     userId,
@@ -180,6 +209,13 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     restoreLogin,
-    getFirstLastName
+    getFirstLastName,
+    setUser,
+    fetchUsers,
+    users,
+    currentPage,
+    lastPage,
+    total,
+    perPage
   }
 })

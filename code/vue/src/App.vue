@@ -5,6 +5,7 @@ import { useAuthStore } from './stores/auth'
 import { useChatStore } from './stores/chat'
 import GlobalAlertDialog from './components/common/GlobalAlertDialog.vue'
 import GlobalInputDialog from './components/common/GlobalInputDialog.vue'
+import router from './router'
 
 const storeAuth = useAuthStore()
 const storeChat = useChatStore()
@@ -143,8 +144,8 @@ onMounted(() => {
         <span v-if="storeAuth.user">
           Welcome, {{ storeAuth.userFirstLastName }}
           <img
-            v-if="storeAuth.user.userPhotoUrl"
-            :src="storeAuth.user.userPhotoUrl"
+            v-if="storeAuth.userPhotoUrl"
+            :src="storeAuth.userPhotoUrl"
             alt="User Photo"
             class="rounded-full w-8 h-8 ml-2 inline-block"
           />
@@ -171,7 +172,7 @@ onMounted(() => {
           Multi Player
         </RouterLink>
         <RouterLink
-          :to="{ name: 'multiPlayerGames' }"
+          :to="{ name: 'profile' }"
           class="w-full sm:w-auto px-4 py-2 text-center rounded-md text-white bg-purple-600 hover:bg-purple-700 transition-all shadow-md"
           active-class="bg-purple-800 hover:bg-purple-800"
         >
@@ -197,7 +198,7 @@ onMounted(() => {
         </RouterLink>
         <button
           v-show="storeAuth.user"
-          @click="logout"
+          @click="logout" 
           class="w-full sm:w-auto px-4 py-2 text-center rounded-md text-white bg-red-600 hover:bg-red-700 transition-all shadow-md"
         >
           Logout
