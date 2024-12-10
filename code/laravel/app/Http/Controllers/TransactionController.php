@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
@@ -26,6 +27,8 @@ class TransactionController extends Controller
         if ($user->type !== 'A') {
             $query->where('user_id', $user->id);
         }
+
+
 
         $transactions = $query->orderBy('transaction_datetime', 'desc')->paginate(10);
 
@@ -116,7 +119,5 @@ class TransactionController extends Controller
                 'status' => 500
             ];
         }
-
     }
-
 }

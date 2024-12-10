@@ -20,7 +20,7 @@ class TransactionResource extends JsonResource
             'payment_reference' => $this->payment_reference,
             'brain_coins' => $this->brain_coins,
             'custom' => $this->custom,
-            'user_total_brain_coins' => $this->user->brain_coins_balance
+            'user_total_brain_coins' => $this->user != null  ? $this->user->brain_coins_balance : 0
         ];
     }
 }

@@ -5,6 +5,7 @@ import { useAuthStore } from './stores/auth'
 import { useChatStore } from './stores/chat'
 import GlobalAlertDialog from './components/common/GlobalAlertDialog.vue'
 import GlobalInputDialog from './components/common/GlobalInputDialog.vue'
+import router from './router'
 
 const storeAuth = useAuthStore()
 const storeChat = useChatStore()
@@ -35,6 +36,7 @@ provide('inputDialog', inputDialog)
 
 const logoutConfirmed = () => {
   storeAuth.logout()
+  router.push({ name: 'singlePlayerGames' })
 }
 
 const logout = () => {
@@ -234,12 +236,12 @@ const isAdmin = computed(() => {
           </div>
         </div>
         <RouterLink
-          v-if="authenticated && !isAdmin"
+          v-if="authenticated"
           :to="{ name: 'transactions' }"
           class="px-6 py-3 rounded-md text-white bg-yellow-500 hover:bg-pink-500 transition-all shadow-md"
           active-class="bg-pink-600 hover:bg-pink-600"
         >
-          Coins
+          Transactions
         </RouterLink>
       </div>
       <div
