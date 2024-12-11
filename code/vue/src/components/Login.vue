@@ -1,22 +1,33 @@
 <script setup>
-import { ref } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-import { Button } from '@/components/ui/button'
-import { useErrorStore } from '@/stores/error'
-import ErrorMessage from './common/ErrorMessage.vue'
-const authStore = useAuthStore()
-const storeError = useErrorStore()
-const email = ref('')
-const password = ref('')
-const responseData = ref('')
+import { ref } from 'vue';
+import { useAuthStore } from '@/stores/auth';
+import { useRouter } from 'vue-router'; // For navigation
+import { useErrorStore } from '@/stores/error';
+import ErrorMessage from './common/ErrorMessage.vue';
+
+const authStore = useAuthStore();
+const storeError = useErrorStore();
+const router = useRouter();
+
+const email = ref('');
+const password = ref('');
+const responseData = ref('');
 
 const submit = async () => {
-  const user = await authStore.login({
-    email: email.value,
-    password: password.value
-  })
-  responseData.value = user.name
-}
+  try {
+    const user = await authStore.login({
+      email: email.value,
+      password: password.value,
+    });
+    responseData.value = user.name;
+  } catch (error) {
+    console.error('Login failed:', error);
+  }
+};
+
+const goToRegister = () => {
+  router.push('/register'); // Navigate to the register component
+};
 </script>
 
 <template>
@@ -31,7 +42,6 @@ const submit = async () => {
           v-model="email"
           class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
         />
-
         <ErrorMessage :errorMessage="storeError.fieldMessage('email')"></ErrorMessage>
       </div>
 
@@ -45,7 +55,26 @@ const submit = async () => {
         />
         <ErrorMessage :errorMessage="storeError.fieldMessage('password')"></ErrorMessage>
       </div>
-      <Button @click.prevent="submit" type="submit">Submit </Button>
+
+      <div class="flex space-x-4">
+        <!-- Login Button -->
+        <button
+          @click.prevent="submit"
+          type="submit"
+          class="px-4 py-2 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
+        >
+          Login
+        </button>
+
+        <!-- Register Button -->
+        <button
+          @click.prevent="goToRegister"
+          type="button"
+          class="px-4 py-2 bg-gray-100 text-gray-700 font-semibold rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 shadow-sm"
+        >
+          Register
+        </button>
+      </div>
 
       <div v-if="responseData" class="space-y-2 mt-8">
         <label for="response" class="block text-sm font-medium text-gray-700"> Response </label>
@@ -59,4 +88,4 @@ const submit = async () => {
       </div>
     </form>
   </div>
-</template>
+</template> 
