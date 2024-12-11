@@ -25,7 +25,7 @@ const formDelete = ref(false);
 // Function to block or unblock the user account
 const blockAccount = async () => {
     try {
-        const response = await axios.patch(`/users/${props.user.nickname}/block`);
+        const response = await axios.patch(`/users/${props.user.nickname}`);
 
         if (response.status === 200) {
             props.user.blocked = response.data.user.blocked; // Update blocked status
