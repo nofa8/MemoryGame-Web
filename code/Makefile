@@ -1,5 +1,5 @@
 GROUP := dad-group-9
-VERSION := 1.0.5
+VERSION := 1.0.10
 
 
 kubectl-pods:

@@ -7,20 +7,26 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Transaction extends Model
 {
+    public $timestamps = false;
+
 
     protected $fillable = [
+        'type',
         'transaction_datetime',
         'user_id',
         'game_id',
-        'type',
         'euros',
-        'brain_coins',
         'payment_type',
-        'payment_reference'
+        'payment_reference',
+        'brain_coins',
+        'custom',
+    ];
+
+    protected $casts = [
+        'custom' => 'array',
     ];
 
 
-    public $timestamps = false;
 
     public function user(): BelongsTo
     {
@@ -31,4 +37,5 @@ class Transaction extends Model
     {
         return $this->belongsTo(Game::class);
     }
+
 }

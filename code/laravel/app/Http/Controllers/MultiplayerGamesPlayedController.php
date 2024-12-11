@@ -19,18 +19,18 @@ use Illuminate\Support\Facades\Log;
 
 class MultiplayerGamesPlayedController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request)
-    {
-        if ($request->user()->type == 'A') {
-            return GameResource::collection(Game::where('type', 'M')->paginate(10));
-        } else {
-            $ids = MultiplayerGamesPlayed::where('user_id', $request->user()->id)->pluck('game_id')->toArray();
-            return GameResource::collection(Game::where('type', 'M')->whereIntegerInRaw('id', $ids)->paginate(10));
-        }
-    }
+    // /**
+    //  * Display a listing of the resource.
+    //  */
+    // public function index(Request $request)
+    // {
+    //     if ($request->user()->type == 'A') {
+    //         return GameResource::collection(Game::where('type', 'M')->paginate(10));
+    //     } else {
+    //         $ids = MultiplayerGamesPlayed::where('user_id', $request->user()->id)->pluck('game_id')->toArray();
+    //         return GameResource::collection(Game::where('type', 'M')->whereIntegerInRaw('id', $ids)->paginate(10));
+    //     }
+    // }
 
     /**
      * Store a newly created resource in storage.
@@ -120,27 +120,27 @@ class MultiplayerGamesPlayedController extends Controller
         return response()->json(['games' => $games]);
     }
 
-    /**
-     * Fetch multiplayer game history for the user.
-     */
-    public function history()
-    {
-        $user = Auth::user();
+    // /**
+    //  * Fetch multiplayer game history for the user.
+    //  */
+    // public function history()
+    // {
+    //     $user = Auth::user();
 
-        $games = MultiplayerGamesPlayed::whereHas('players', function ($query) use ($user) {
-            $query->where('user_id', $user->id);
-        })->with('players')->get();
+    //     $games = MultiplayerGamesPlayed::whereHas('players', function ($query) use ($user) {
+    //         $query->where('user_id', $user->id);
+    //     })->with('players')->get();
 
-        return response()->json(['games' => $games]);
-    }
+    //     return response()->json(['games' => $games]);
+    // }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(MultiplayerGamesPlayed $multi)
-    {
-        return new MultiplayerGamesPlayedResource($multi);
-    }
+    // /**
+    //  * Display the specified resource.
+    //  */
+    // public function show(MultiplayerGamesPlayed $multi)
+    // {
+    //     return new MultiplayerGamesPlayedResource($multi);
+    // }
 
     /**
      * Update the specified resource in storage.
@@ -160,10 +160,12 @@ class MultiplayerGamesPlayedController extends Controller
 
         $game->status = $validated['status'];
         if ($validated['status'] === 'E') {
-            if ((!array_key_exists('turns', $validated) ||
-                !array_key_exists('pairs_discovered', $validated)
-                || !array_key_exists('won', $validated) ||
-                !array_key_exists('user_id', $validated))) {
+            if (
+                (!array_key_exists('turns', $validated) ||
+                    !array_key_exists('pairs_discovered', $validated)
+                    || !array_key_exists('won', $validated) ||
+                    !array_key_exists('user_id', $validated))
+            ) {
                 return response()->json(['error' => 'Incomplete request!'], 400);
             }
 
@@ -194,10 +196,9 @@ class MultiplayerGamesPlayedController extends Controller
                 $user->save();
                 $transaction->save();
             }
-
         }
         $game->save();
-        return response()->json(['success' => 'Multiplayer game updated successfully','Game'=> new GameResource($game)]);
+        return response()->json(['success' => 'Multiplayer game updated successfully', 'Game' => new GameResource($game)]);
     }
 
 
@@ -211,38 +212,32 @@ class MultiplayerGamesPlayedController extends Controller
 
 
 
-    public function end($request)
-    {
-        $game = MultiplayerGamesPlayed::find($request->game_id);
+    // public function end($request)
+    // {
+    //     $game = MultiplayerGamesPlayed::find($request->game_id);
 
-        // Check if game is in progress
-        if ($game->status !== 'PL') {
-            return response()->json(['error' => 'This game is not in progress.'], 403);
-        }
+    //     // Check if game is in progress
+    //     if ($game->status !== 'PL') {
+    //         return response()->json(['error' => 'This game is not in progress.'], 403);
+    //     }
 
-        // Mark game as ended
-        $game->update([
-            'status' => 'E',
-            'ended_at' => now(),
-            'winner_user_id' => $request->winner_id,
-        ]);
+    //     // Mark game as ended
+    //     $game->update([
+    //         'status' => 'E',
+    //         'ended_at' => now(),
+    //         'winner_user_id' => $request->winner_id,
+    //     ]);
 
-        // Calculate and distribute rewards
-        $totalBrainCoins = $game->players()->count() * 5;
-        $platformFee = 3;
-        $reward = $totalBrainCoins - $platformFee;
+    //     // Calculate and distribute rewards
+    //     $totalBrainCoins = $game->players()->count() * 5;
+    //     $platformFee = 3;
+    //     $reward = $totalBrainCoins - $platformFee;
 
-        $winner = User::find($request->winner_id);
-        $winner->increment('brain_coins', $reward);
+    //     $winner = User::find($request->winner_id);
+    //     $winner->increment('brain_coins', $reward);
 
-        return response()->json(['message' => 'Game ended successfully.', 'reward' => $reward]);
-    }
+    //     return response()->json(['message' => 'Game ended successfully.', 'reward' => $reward]);
+    // }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
+
 }

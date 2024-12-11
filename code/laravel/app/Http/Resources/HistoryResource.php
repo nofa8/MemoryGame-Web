@@ -5,7 +5,8 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class HistoryResource extends JsonResource {
+class HistoryResource extends JsonResource
+{
     /**
      * Transform the resource into an array.
      *
@@ -16,26 +17,16 @@ class HistoryResource extends JsonResource {
         return [
             'id' => $this->id,
             'type' => $this->type,
-            'status' => $this->status, 
-            'total_time' => $this->total_time, 
-            'creator' => $this->formatName($this->creator->name),
-            'winner' => $this->winner ? $this->formatName($this->winner->name) : null,
+            'status' => $this->status,
+            'total_time' => $this->total_time,
+            'creator' => $this->creator->nickname,
+            'winner' => $this?->winner?->nickname,
             'start_time' => $this->began_at,
             'end_time' => $this->ended_at,
             'board_cols' => $this->board->board_cols,
             'board_rows' => $this->board->board_rows,
             'total_turns' => $this->total_turns_winner ?? 0,
-            'players' => $this->multiplayerGamesPlayed->pluck('user.name')->map(function ($name) {
-                return $this->formatName($name);
-            }),
+            'players' => $this->multiplayerGamesPlayed->pluck('user.nickname')
         ];
-    }
-
-    private function formatName($fullName){
-        $parts = explode(' ', $fullName);
-        if (count($parts) > 1) {
-            return $parts[0] . ' ' . $parts[count($parts) - 1];
-        }
-        return $fullName;
     }
 }

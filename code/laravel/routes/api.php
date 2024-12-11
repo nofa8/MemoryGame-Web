@@ -5,12 +5,13 @@ use App\Http\Controllers\BoardController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\MultiplayerGamesPlayedController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\TransactionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
 // Specific for TAES
-Route::get('/gamesTAES', [GameController::class, "index"]); // Get games
+Route::get('/gamesTAES', [GameController::class, "indexTAES"]); // Get games
 Route::post('/gamesTAES', [GameController::class, 'storeTAES']);
 
 
@@ -20,7 +21,11 @@ Route::post('/gamesTAES', [GameController::class, 'storeTAES']);
 Route::post('/auth/login', [AuthController::class, "login"]);
 Route::post('auth/register', [AuthController::class, "register"]);
 
-Route::get('/boards', [BoardController::class, "index"]); // Get Boards
+
+Route::get('/boards', [BoardController::class, "index"]);
+Route::get('/scoreboardGlobal', [GameController::class, 'indexScoreboardGlobal']);
+
+
 
 Route::middleware(['auth:sanctum'])->group(function () {
     // Route::get('/users/me', function (Request $request) {return $request->user();});
@@ -41,17 +46,26 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/auth/admin', [AuthController::class, 'createAdmin']);
     Route::delete('/auth/admin/{nickname}', [UserController::class, 'deleteUserAsAdmin']);
 
+    ///////////////////////////TAES
+    Route::get('/historyTAES', [GameController::class, 'indexHistoryTAES']);
+
+    ///////////////////////////////////////////////////////
+
+
+    Route::get('/scoreboardPersonal', [GameController::class, 'indexScoreboardPersonal']);
+
+
+    Route::get('/transactions', [TransactionController::class, 'index']);
+    Route::get('/transactions/{id}', [TransactionController::class, 'show']);
+    Route::post('/transactions', [TransactionController::class, 'store']);
+
     Route::prefix('games')->group(function () {
         Route::post('/', [GameController::class, 'store']); // Create a new game
-        Route::get('/{id}', [GameController::class, 'show']); // Get game details
         Route::put('/{id}', [GameController::class, 'update']); // Update game status
-        Route::delete('/{id}', [GameController::class, 'delete']); // Delete a game
     });
 
     Route::prefix('multiplayer-games')->group(function () {
-        Route::post('/', [MultiplayerGamesPlayedController::class, 'store']); 
-        Route::patch('/{id}', [MultiplayerGamesPlayedController::class, 'update']); 
-        Route::get('/{id}/players', [MultiplayerGamesPlayedController::class, 'listPlayers']); // Get players in a multiplayer game
+        Route::post('/', [MultiplayerGamesPlayedController::class, 'store']);
+        Route::patch('/{id}', [MultiplayerGamesPlayedController::class, 'update']);
     });
-
 });
