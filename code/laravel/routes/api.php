@@ -19,6 +19,8 @@ Route::post('/gamesTAES', [GameController::class, 'storeTAES']);
 
 ///////////////////////////////////
 Route::post('/auth/login', [AuthController::class, "login"]);
+Route::post('auth/register', [AuthController::class, "register"]);
+
 
 Route::get('/boards', [BoardController::class, "index"]);
 Route::get('/scoreboardGlobal', [GameController::class, 'indexScoreboardGlobal']);
@@ -27,10 +29,22 @@ Route::get('/scoreboardGlobal', [GameController::class, 'indexScoreboardGlobal']
 
 Route::middleware(['auth:sanctum'])->group(function () {
     // Route::get('/users/me', function (Request $request) {return $request->user();});
+    Route::put('/users/me', [UserController::class, 'updateProfile']); 
     Route::get('/users/me', [UserController::class, 'showMe']);
+    Route::delete('/users/me', [UserController::class, 'deleteProfile']);
+    
+    Route::get('/users', [UserController::class, 'indexAll']);
+    Route::post('users/image', [UserController::class, 'updateProfilePicture']);
+    Route::patch('/users/{nickname}', [UserController::class, 'blockOrUnblockAccount']);
+    
+
+    Route::get('/history', [GameController::class, 'indexHistory']);
+
+    Route::patch('/auth/admin/{nickname}', [UserController::class, 'restore']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::post('/auth/refreshtoken', [AuthController::class, 'refreshToken']);
-    Route::get('/history', [GameController::class, 'indexHistory']);
+    Route::post('/auth/admin', [AuthController::class, 'createAdmin']);
+    Route::delete('/auth/admin/{nickname}', [UserController::class, 'deleteUserAsAdmin']);
 
     ///////////////////////////TAES
     Route::get('/historyTAES', [GameController::class, 'indexHistoryTAES']);

@@ -8,10 +8,107 @@ use App\Http\Requests\LoginRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
+
+
 
 
 class AuthController extends Controller
 {
+    public function createAdmin(Request $request)
+    {
+        $user = $request->user();
+        if ($user->type != 'A') {
+            return response()->json([
+                'message' => 'Not Admin'
+            ], 403);
+
+        }
+
+        try {
+            // Validate the incoming request
+            $validator = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users',
+                'nickname' => 'required|string|max:255|unique:users',
+                'password' => 'required|string|min:3|confirmed',
+                'photo' => 'nullable|image|max:2048', // Optional photo
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed.',
+                'errors' => $e->errors()
+            ], 422);
+        }
+
+
+        // Store the user's photo if provided
+        $photoPath = null;
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('photos', 'public');
+        }
+
+        // Create the new user
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'nickname' => $request->nickname,
+            'password' => Hash::make($request->password),
+            'photo' => $photoPath, // Save the photo path
+            'type' => 'A'
+        ]);
+
+        return response()->json([
+            'message' => 'User registered successfully',
+            'user' => $user,
+        ], 201);
+    }
+
+
+
+    public function register(Request $request)
+    {
+        try {
+            // Validate the incoming request
+            $validator = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users',
+                'nickname' => 'required|string|max:255|unique:users',
+                'password' => 'required|string|min:3|confirmed',
+                'photo' => 'nullable|image|max:2048', // Optional photo
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed.',
+                'errors' => $e->errors()
+            ], 422);
+        }
+
+
+        // Store the user's photo if provided
+        $photoPath = null;
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('photos', 'public');
+        }
+
+        // Create the new user
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'nickname' => $request->nickname,
+            'password' => Hash::make($request->password),
+            'photo' => $photoPath, // Save the photo path
+            'brain_coins_balance' => 10,
+        ]);
+
+        return response()->json([
+            'message' => 'User registered successfully',
+            'user' => $user,
+        ], 201);
+    }
+
+
     private function purgeExpiredTokens()
     {
         // Only deletes if token expired 2 hours ago
