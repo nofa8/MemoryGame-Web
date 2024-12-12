@@ -108,10 +108,11 @@ export const useAuthStore = defineStore('auth', () => {
   const logout = async () => {
     storeError.resetMessages();
     try {
-      await axios.post('auth/logout');
-      clearUser();
-      
-      return true;
+      await axios.post('auth/logout')
+      clearUser()
+      router.push({name:"singlePlayerGames"})
+      return true
+
     } catch (e) {
       clearUser();
       storeError.setErrorMessages(
