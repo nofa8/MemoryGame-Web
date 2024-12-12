@@ -47,28 +47,59 @@ class GameController extends Controller
     {
         $userId = $request->user()->id;
 
-        // se o user for admin ele pode ver todos os jogos
         if ($request->user()->type == 'A') {
-            $games = Game::with(['creator', 'winner', 'board', 'multiplayerGamesPlayed.user'])
-                ->whereHas('creator', function ($query) {
-                    $query->whereNull('deleted_at');
-                })
-                ->orderBy('began_at', 'desc')
-                ->paginate(10);
-
-            // se não ele só pode ver os jogos que ele criou ou participou
+            $query = Game::with(['creator' => function ($query) {
+                $query->withTrashed();
+            }, 'winner' => function ($query) {
+                $query->withTrashed();
+            }, 'board', 'multiplayerGamesPlayed.user' => function ($query) {
+                $query->withTrashed();
+            }]);
         } else {
-            $games = Game::where('created_user_id', $userId)
-                ->orWhereHas('multiplayerGamesPlayed', function ($query) use ($userId) {
-                    $query->where('user_id', $userId);
-                })
-                ->with(['creator', 'winner', 'board', 'multiplayerGamesPlayed.user'])
-                ->whereHas('winner', function ($query) {
-                    $query->whereNull('deleted_at');
-                })
-                ->orderBy('began_at', 'desc')
-                ->paginate(10);
+            $query = Game::with(['creator' => function ($query) {
+                $query->withTrashed();
+            }, 'winner' => function ($query) {
+                $query->withTrashed();
+            }, 'board', 'multiplayerGamesPlayed.user' => function ($query) {
+                $query->withTrashed();
+            }])
+                ->where(function ($query) use ($userId) {
+                    $query->where('created_user_id', $userId)
+                        ->orWhereHas('multiplayerGamesPlayed', function ($query) use ($userId) {
+                            $query->where('user_id', $userId);
+                        });
+                });
         }
+
+        if ($request->filled('board_size') && $request->input('board_size') !== 'All board sizes') {
+            list($cols, $rows) = explode('x', $request->input('board_size'));
+            $query->whereHas('board', function ($query) use ($cols, $rows) {
+                $query->where('board_cols', $cols)
+                    ->where('board_rows', $rows);
+            });
+        }
+
+        if ($request->filled('start_date')) {
+            $query->whereDate('began_at', '>=', $request->input('start_date'));
+        }
+
+        if ($request->filled('end_date')) {
+            $query->whereDate('began_at', '<=', $request->input('end_date'));
+        }
+
+        if ($request->filled('game_type') && $request->input('game_type') !== 'All types') {
+            $gameType = $request->input('game_type') === 'Single Player' ? 'S' : 'M';
+            $query->where('type', $gameType);
+        }
+
+        if ($request->user()->type == 'A' && $request->filled('creator')) {
+            $query->whereHas('creator', function ($q) use ($request) {
+                $q->where('nickname', 'LIKE', '%' . $request->input('creator') . '%');
+            });
+        }
+
+        $games = $query->orderBy('began_at', 'desc')
+            ->paginate(10);
 
         return response()->json([
             'data' => HistoryResource::collection($games),
@@ -95,7 +126,6 @@ class GameController extends Controller
             ->orderBy('began_at', 'desc')
             ->take(10);
 
-
         return HistoryResource::collection($games);
     }
 
@@ -103,37 +133,52 @@ class GameController extends Controller
     {
         $userId = $request->user()->id;
 
-        // melhor tempo para cada board em jogos singleplayer de um user
         $bestTimes = Game::where('created_user_id', $userId)
             ->where('type', 'S')
+            ->where('total_time', '<>', null)
             ->with('board')
-            ->select('board_id', DB::raw('MIN(total_time) as total_time'))
-            ->groupBy('board_id')
+            ->select('board_id', 'total_time', 'board_id')
+            ->with('board')
             ->get()
-            ->mapWithKeys(function ($item) {
-                return [$item->board_id => [
-                    'total_time' => $item->total_time,
-                    'board_cols' => $item->board->board_cols,
-                    'board_rows' => $item->board->board_rows,
-                ]];
+            ->groupBy(function ($item) {
+                return $item->board->board_cols . 'x' . $item->board->board_rows;
+            })
+            ->map(function ($boardGroup) {
+                return $boardGroup->sortBy('total_time')
+                    ->take(3)
+                    ->map(function ($game) {
+                        return [
+                            'total_time' => $game->total_time,
+                            'board_cols' => $game->board->board_cols,
+                            'board_rows' => $game->board->board_rows,
+                        ];
+                    })
+                    ->values();
             });
 
-        // menor numero de jogadas para cada board em jogos singleplayer de um user
         $minTurns = Game::where('created_user_id', $userId)
             ->where('type', 'S')
+            ->where('total_turns_winner', '<>', null)
             ->with('board')
-            ->select('board_id', DB::raw('MIN(total_turns_winner) as total_turns_winner'))
-            ->groupBy('board_id')
+            ->select('board_id', 'total_turns_winner', 'board_id')
+            ->with('board')
             ->get()
-            ->mapWithKeys(function ($item) {
-                return [$item->board_id => [
-                    'total_turns_winner' => $item->total_turns_winner,
-                    'board_cols' => $item->board->board_cols,
-                    'board_rows' => $item->board->board_rows,
-                ]];
+            ->groupBy(function ($item) {
+                return $item->board->board_cols . 'x' . $item->board->board_rows;
+            })
+            ->map(function ($boardGroup) {
+                return $boardGroup->sortBy('total_turns_winner')
+                    ->take(3)
+                    ->map(function ($game) {
+                        return [
+                            'total_turns_winner' => $game->total_turns_winner,
+                            'board_cols' => $game->board->board_cols,
+                            'board_rows' => $game->board->board_rows,
+                        ];
+                    })
+                    ->values();
             });
 
-        // vitórias e derrotas em jogos multiplayer de um user
         $multiplayerStats = DB::table('multiplayer_games_played')
             ->where('user_id', $userId)
             ->selectRaw('SUM(CASE WHEN player_won = 1 THEN 1 ELSE 0 END) as total_victories')
@@ -197,14 +242,15 @@ class GameController extends Controller
 
     public function indexScoreboardGlobal()
     {
-        $bestTimes = Game::where([['type', 'S'], ['total_time', '<>', null]])
+        $bestTimes = Game::where('type', 'S')
+            ->where('total_time', '<>', null)
             ->select('board_id', DB::raw('MIN(total_time) as total_time'), 'created_user_id')
-            ->with(['board', 'creator'])
+            ->with(['board:id,board_cols,board_rows', 'creator:id,nickname'])
             ->whereHas('creator', function ($query) {
                 $query->whereNull('deleted_at');
             })
             ->groupBy('board_id', 'created_user_id')
-            ->orderBy('total_time', 'desc')
+            ->orderBy('total_time', 'asc')
             ->get()
             ->mapWithKeys(function ($item) {
                 return [$item->board_id => [
