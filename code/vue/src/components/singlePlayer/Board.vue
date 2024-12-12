@@ -1,6 +1,5 @@
-//Board
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeMount, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { inject } from 'vue'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import { Card as CardCard } from '@/components/ui/card'
@@ -33,19 +32,12 @@ const { status, board, moves, matchedPairs, streak, bestStreak, start, play } = 
 )
 
 const alertDialog = inject('alertDialog')
-const autoStart = true
+const autoStart = ref(false)
 const stopwatch = useStopwatch(autoStart)
+const startedFirstClick = ref(false)
 
 const showSeconds = computed(() => {
   return stopwatch.seconds.value + 60 * stopwatch.minutes.value
-})
-
-const dynamicBackground = computed(() => {
-  const intensity = Math.max(0, 255 - streak.value * 40) // Adjust the multiplier for desired sensitivity
-  const redColor = `rgba(255, ${intensity}, ${intensity}, 1)`
-  const middleColor = `rgba(255, 255, 255, 1)` // White at the center
-
-  return `linear-gradient(to right, ${redColor}, ${middleColor}, ${redColor})`
 })
 
 const stopWorking = ref(true)
@@ -55,6 +47,9 @@ const turns = computed(() => {
 })
 const flip = (index) => {
   play(index)
+  if (!startedFirstClick.value) {
+    autoStart.value = true
+  }
   if (!stopWorking.value) {
     stopwatch.start()
   }
@@ -166,24 +161,22 @@ onBeforeRouteLeave((to, from, next) => {
 const handleBeforeUnload = async (event) => {
   if (status.value === '0' && storeAuth.user != null) {
     // Show a confirmation dialog to the user
-    event.preventDefault();
-    event.returnValue = "Are you sure you want to leave the game? Your progress may be lost.";
+    event.preventDefault()
+    event.returnValue = 'Are you sure you want to leave the game? Your progress may be lost.'
 
     try {
       const payload = {
-        status: 'I',
-      };
+        status: 'I'
+      }
 
-      await axios.put(`/games/${game_id.value}`, payload);
+      await axios.put(`/games/${game_id.value}`, payload)
 
-      console.log("Game status updated successfully.");
+      console.log('Game status updated successfully.')
     } catch (error) {
-      console.error("Error updating game status:", error);
+      console.error('Error updating game status:', error)
     }
   }
-};
-
-
+}
 
 onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', handleBeforeUnload)

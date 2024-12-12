@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\GlobalBroadcastTop;
+use App\Events\PersonalTopThreeEvent;
 use App\Http\Requests\GameRequest;
 use App\Http\Requests\GameUpdateRequest;
 use App\Http\Requests\StoreGameRequest;
 use App\Http\Resources\GameResource;
 use App\Http\Resources\HistoryResource;
+use App\Http\Resources\HistoryTAESResource;
 use App\Models\Game;
 use App\Models\MultiplayerGamesPlayed;
 use App\Models\Transaction;
@@ -93,10 +96,10 @@ class GameController extends Controller
         $games = Game::where('created_user_id', $userId)
             ->with(['creator'])
             ->orderBy('began_at', 'desc')
-            ->take(10);
+            ->take(50);
 
 
-        return HistoryResource::collection($games);
+        return HistoryTAESResource::collection($games);
     }
 
     public function indexScoreboardPersonal(Request $request)
@@ -267,10 +270,53 @@ class GameController extends Controller
     {
         $game = Game::create($request->validated());
 
+        $boardId = $game->board_id; // Assuming the game has a board_id
+        $player = $game->creator;   // Assuming the game is associated with a User model
+
+        // Check if the new game qualifies for the top 3 by time
+        $isTopTime = Game::where('board_id', $boardId)
+            ->whereNotNull('total_time') // Ensure total_time is not null
+            ->orderBy('total_time', 'asc') // Ascending order for time
+            ->take(3)
+            ->get()
+            ->contains('id', $game->id);
+
+        // Check if the new game qualifies for the top 3 by total_turns_winner
+        $isTopTurns = Game::where('board_id', $boardId)
+            ->whereNotNull('total_turns_winner') // Ensure total_turns_winner is not null
+            ->orderBy('total_turns_winner', 'asc') // Ascending order for total turns
+            ->take(3)
+            ->get()
+            ->contains('id', $game->id);
+        // Check if the new game qualifies for the player's personal top 3 by time
+        $isPersonalTopTime = Game::where('board_id', $boardId)
+            ->where('created_user_id', $player->id)
+            ->whereNotNull('total_time') // Ensure total_time is not null
+            ->orderBy('total_time', 'asc') // Ascending order for time
+            ->take(3)
+            ->get()
+            ->contains('id', $game->id);
+
+        // Check if the new game qualifies for the player's personal top 3 by total_turns_winner
+        $isPersonalTopTurns = Game::where('board_id', $boardId)
+            ->where('created_user_id', $player->id)
+            ->whereNotNull('total_turns_winner') // Ensure total_turns_winner is not null
+            ->orderBy('total_turns_winner', 'asc') // Ascending order for total turns
+            ->take(3)
+            ->get()
+            ->contains('id', $game->id);
+
+
+
         return response()->json([
-            'message' => 'Game created successfully!'
+            'message' => 'Game created successfully!',
+            'is_top_time' => $isTopTime,
+            'is_top_turns' => $isTopTurns,
+            'is_personal_top_time' => $isPersonalTopTime,
+            'is_personal_top_turns' => $isPersonalTopTurns,
         ], 201);
     }
+
 
     public function store(StoreGameRequest $request)
     {
