@@ -44,10 +44,15 @@ export const useHistoryStore = defineStore('history', () => {
         return `${minutes}:${seconds}`;
     }
 
-    const fetchGameHistory = async (page = 1) => {
+    const fetchGameHistory = async (page = 1, filters = {}) => {
         storeError.resetMessages();
         try {
-            const response = await axios.get(`history?page=${page}`);
+            const queryParams = new URLSearchParams({
+                page,
+                ...filters
+            }).toString();
+    
+            const response = await axios.get(`history?${queryParams}`);
             games.value = response.data.data;
             currentPage.value = response.data.meta.current_page;
             lastPage.value = response.data.meta.last_page;
@@ -57,7 +62,7 @@ export const useHistoryStore = defineStore('history', () => {
             console.error('Failed to fetch game history:', error);
             storeError.setErrorMessages(error.message);
         }
-    }
+    };
 
     return {
         fetchGameHistory, 

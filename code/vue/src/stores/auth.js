@@ -110,7 +110,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       await axios.post('auth/logout')
       clearUser()
-      //router.push("login")
+      router.push({name:"singlePlayerGames"})
       return true
     } catch (e) {
       clearUser()
