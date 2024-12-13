@@ -25,8 +25,9 @@ const opponentName = computed(() => {
     : storeAuth.getFirstLastName(props.game.player1.name)
 })
 
-
-
+const wow = computed(() => {
+  return props.game.flippedCards.length == 2
+})
 
 const gameEnded = computed(() => {
   return props.game.gameStatus > 0
@@ -82,17 +83,16 @@ const statusGameMessage = computed(() => {
   switch (props.game.gameStatus) {
     case 0:
       if (props.game.currentPlayer == 1) {
-        return props.game.player1.nickname+"'s Turn!"
-
-      }else{
-        return props.game.player2.nickname+"'s Turn!"
+        return props.game.player1.nickname + "'s Turn!"
+      } else {
+        return props.game.player2.nickname + "'s Turn!"
       }
-      
+
     case 1:
     case 2:
       return storeMultiGames.playerNumberOfCurrentUser(props.game) == props.game.gameStatus
         ? 'You won'
-        : 'You lost';
+        : 'You lost'
     case 3:
       return 'Draw'
     default:
@@ -101,7 +101,7 @@ const statusGameMessage = computed(() => {
 })
 
 const playPieceOfBoard = (idx) => {
-  if (!gameEnded.value && currentUserTurn.value) {
+  if (!gameEnded.value && currentUserTurn.value && !wow.value) {
     storeMultiGames.play(props.game, idx)
   }
 }
