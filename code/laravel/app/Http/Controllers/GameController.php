@@ -33,6 +33,8 @@ class GameController extends Controller
         $games = Game::where('status', 'E')->with(['creator'])->take(10)->get();
         return GameResource::collection($games);
     }
+
+
     //returns singleplayer games
     public function indexSingle(Request $request)
     {
@@ -130,7 +132,6 @@ class GameController extends Controller
             ->take(50);
 
         return HistoryTAESResource::collection($games);
-
     }
 
     public function indexScoreboardPersonal(Request $request)
@@ -320,19 +321,15 @@ class GameController extends Controller
         $boardId = $game->board_id; // Assuming the game has a board_id
         $player = $game->creator;   // Assuming the game is associated with a User model
 
-        // Check if the new game qualifies for the top 3 by time
-        $isTopTime = Game::where('board_id', $boardId)
-            ->whereNotNull('total_time') // Ensure total_time is not null
+        $isTopTime = Game::whereNotNull('total_time') // Ensure total_time is not null
             ->orderBy('total_time', 'asc') // Ascending order for time
-            ->take(3)
+            ->take(10)
             ->get()
             ->contains('id', $game->id);
 
-        // Check if the new game qualifies for the top 3 by total_turns_winner
-        $isTopTurns = Game::where('board_id', $boardId)
-            ->whereNotNull('total_turns_winner') // Ensure total_turns_winner is not null
+        $isTopTurns = Game::whereNotNull('total_turns_winner') // Ensure total_turns_winner is not null
             ->orderBy('total_turns_winner', 'asc') // Ascending order for total turns
-            ->take(3)
+            ->take(10)
             ->get()
             ->contains('id', $game->id);
         // Check if the new game qualifies for the player's personal top 3 by time
