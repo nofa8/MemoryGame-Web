@@ -41,7 +41,7 @@ const updateProfile = () => {
         password_confirmation: passwordConfirm.value ? passwordConfirm.value : null
       })
       .then((response) => {
-        console.log('Profile updated successfully:', response.data)
+        // console.log('Profile updated successfully:', response.data)
         authStore.setUser(response.data.user) // Update the local store with the new user data
       })
       .catch((error) => {

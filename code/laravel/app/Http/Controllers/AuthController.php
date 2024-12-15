@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests\LoginRequest;
+use App\Models\Transaction;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
@@ -101,6 +102,14 @@ class AuthController extends Controller
             'photo' => $photoPath, // Save the photo path
             'brain_coins_balance' => 10,
         ]);
+
+
+        $transaction = new Transaction();
+        $transaction->user_id = $user->id;
+        $transaction->brain_coins = 10;
+        $transaction->type = 'B';
+        $transaction->transaction_datetime = now();
+
 
         return response()->json([
             'message' => 'User registered successfully',

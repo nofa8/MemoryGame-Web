@@ -86,7 +86,7 @@ const register = async () => {
       const response = await axios.post('/auth/register', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      console.log('User registered successfully:', response.data);
+      // console.log('User registered successfully:', response.data);
       router.push('/login'); // Redirect to login page
     } catch (error) {
       if (error.response && error.response.data && error.response.data.errors) {

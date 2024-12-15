@@ -27,21 +27,26 @@ io.on("connection", (socket) => {
     });
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     socket.on("loginTAES", (user) => {
-        socket.data.user = user;
-        if (user && user.id) {
-            socket.join("user_" + user.id);
+        try {
+          const parsed = JSON.parse(user);
+          socket.data.user = parsed;
+          if (parsed && parsed.id) {
+            socket.join("user." + parsed.id);
+          }
+        } catch (error) {
+          console.error("Invalid JSON:", error.message);
         }
-    });
+      });
 
     socket.on("logoutTAES", (user) => {
         if (user && user.id) {
-            socket.leave("user_" + user.id);
+            socket.leave("user." + user.id);
         }
         socket.data.user = undefined;
     });
 
     socket.on("transactionTAES", (user, message) => {
-        const destinationRoomName = "user_" + socket.data.user.id;
+        const destinationRoomName = "user." + socket.data.user.id;
         if (io.sockets.adapter.rooms.get(destinationRoomName)) {
             const payload = {
                 user: user,

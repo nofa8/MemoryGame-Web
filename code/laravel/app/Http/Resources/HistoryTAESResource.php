@@ -18,14 +18,13 @@ class HistoryTAESResource extends JsonResource
             'id' => $this->id,
             'type' => $this->type,
             'status' => $this->status,
-            'time' => $this->total_time,
+            'total_time' => $this->total_time ?? -1,
             'creator' => $this->created_user_id,
             'name' =>  $this?->creator?->nickname,
-            // 'winner' => $this->winner_id ,
             'start_time' => $this->began_at,
-            'end_time' => $this->ended_at,
+            'end_time' => $this->ended_at ?? -1,
             'board' => $this->board_id,
-            'turns' => $this->total_turns_winner ?? 100
+            'turns' => $this->total_turns_winner ?? -1
         ];
     }
 }

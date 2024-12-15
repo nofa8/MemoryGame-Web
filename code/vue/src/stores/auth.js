@@ -87,7 +87,7 @@ export const useAuthStore = defineStore('auth', () => {
       const responseUser = await axios.get('users/me');
       user.value = responseUser.data.data;
       socket.emit('login', user.value);
-
+      // console.log(user.value)
       repeatRefreshToken();
       
       router.push({ name: 'singlePlayerGames' });
@@ -173,7 +173,7 @@ export const useAuthStore = defineStore('auth', () => {
         const responseUser = await axios.get('users/me');
         user.value = responseUser.data.data;
         socket.emit('login', user.value);
-
+        // console.log(user.value)
         repeatRefreshToken();
         return true;
       } catch {

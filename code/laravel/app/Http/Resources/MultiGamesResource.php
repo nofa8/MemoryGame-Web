@@ -24,7 +24,7 @@ class MultiGamesResource extends JsonResource
             'board' => new BoardResource($this->board),
             'player2' => $this->multiplayerGamesPlayed
                 ->where('user_id', '!=', $this->created_user_id) 
-                ->first()?->user ?? 'Unknown User',
+                ->first()?->user ?? 'Unknown User'
         ];
     }
 }

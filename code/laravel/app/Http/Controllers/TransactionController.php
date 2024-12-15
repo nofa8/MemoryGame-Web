@@ -15,6 +15,26 @@ class TransactionController extends Controller
 {
 
 
+    public function storeTAES (Request $request){
+        $validated = $request->validate([
+            'value' => 'required|integer',
+        ]);
+        $user = $request->user();
+        $transaction = new Transaction();
+        $transaction->user_id = $user->id;
+        $transaction->brain_coins =$validated["value"] ;
+        $transaction->type = 'I';
+        $transaction->transaction_datetime = now();
+        
+        $user->brain_coins_balance += $validated["value"];
+        $user->save();
+        $transaction->save();
+
+        return response()->json(["user"=> $user], 200);
+
+
+    }
+
     public function index(Request $request)
     {
         $user = $request->user();

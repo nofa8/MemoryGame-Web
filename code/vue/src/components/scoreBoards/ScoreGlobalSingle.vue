@@ -1,5 +1,4 @@
 <script setup>
-import { defineProps } from 'vue';
 import BestTimes from '@/components/scoreBoards/ScoreGlobalSingleBestTimes.vue';
 import MinTurns from '@/components/scoreBoards/ScoreGlobalSingleMinTurns.vue';
 

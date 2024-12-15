@@ -1,5 +1,4 @@
 <script setup>
-import { defineProps } from 'vue';
 import { useScoreboardStore } from '@/stores/scoreboard';
 
 const scoreboardStore = useScoreboardStore();

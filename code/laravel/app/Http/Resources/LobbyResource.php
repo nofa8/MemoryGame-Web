@@ -36,7 +36,7 @@ class LobbyResource extends JsonResource
                     ];
                 }
                 return null;
-            })->filter(),
+            })->filter()
         ];
     }
 }

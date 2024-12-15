@@ -30,7 +30,7 @@ class GameController extends Controller
     //  */
     public function indexTAES()
     {
-        $games = Game::where('status', 'E')->with(['creator'])->take(10)->get();
+        $games = Game::where('status', 'E')->where('type', "S")->orderBy('total_time', 'asc')->orderBy('total_turns_winner','asc')->with(['creator'])->take(10)->get();
         return GameResource::collection($games);
     }
 
@@ -126,10 +126,10 @@ class GameController extends Controller
         $userId = $request->user()->id;
 
 
-        $games = Game::where('created_user_id', $userId)
+        $games = Game::where('created_user_id', $userId)->where('type', "S")
             ->with(['creator'])
             ->orderBy('began_at', 'desc')
-            ->take(50);
+            ->get()->take(50);
 
         return HistoryTAESResource::collection($games);
     }
@@ -200,49 +200,24 @@ class GameController extends Controller
     public function indexScoreboardPersonalTAES(Request $request)
     {
         $userId = $request->user()->id;
-
         // melhor tempo para cada board em jogos singleplayer de um user
         $bestTimes = Game::where('created_user_id', $userId)
             ->where('type', 'S')
-            ->with('board')
-            ->select('board_id', DB::raw('MIN(total_time) as total_time'))
-            ->groupBy('board_id')
+            ->where('status', 'E')
+            ->with('board')  // Eager load the 'board' relationship
+            ->select('board_id', 'total_time', 'id', 'created_at')  // Select relevant fields
+            ->orderBy('total_time', 'asc')  // Ensure the times are ordered by best times
+            ->orderBy('total_turns_winner', 'asc')
             ->get()
-            ->mapWithKeys(function ($item) {
-                return [$item->board_id => [
-                    'total_time' => $item->total_time,
-                    'board_cols' => $item->board->board_cols,
-                    'board_rows' => $item->board->board_rows,
-                ]];
-            });
+            ->groupBy('board_id')  // Group by board_id
+            ->map(function ($games) {
+                return $games->take(3);  // Take the top 3 games for each board
+            })
+            ->flatten();
 
-        // menor numero de jogadas para cada board em jogos singleplayer de um user
-        $minTurns = Game::where('created_user_id', $userId)
-            ->where('type', 'S')
-            ->with('board')
-            ->select('board_id', DB::raw('MIN(total_turns_winner) as total_turns_winner'))
-            ->groupBy('board_id')
-            ->get()
-            ->mapWithKeys(function ($item) {
-                return [$item->board_id => [
-                    'total_turns_winner' => $item->total_turns_winner,
-                    'board_cols' => $item->board->board_cols,
-                    'board_rows' => $item->board->board_rows,
-                ]];
-            });
 
-        // vitórias e derrotas em jogos multiplayer de um user
-        $multiplayerStats = DB::table('multiplayer_games_played')
-            ->where('user_id', $userId)
-            ->selectRaw('SUM(CASE WHEN player_won = 1 THEN 1 ELSE 0 END) as total_victories')
-            ->selectRaw('SUM(CASE WHEN player_won = 0 THEN 1 ELSE 0 END) as total_losses')
-            ->first();
 
-        return response()->json([
-            'best_times' => $bestTimes,
-            'min_turns' => $minTurns,
-            'multiplayer_stats' => $multiplayerStats
-        ]);
+        return HistoryTAESResource::collection($bestTimes);
     }
 
     public function indexScoreboardGlobal()
@@ -311,6 +286,42 @@ class GameController extends Controller
         ]);
     }
 
+
+    public function bonusBrainCoinsTAES(Request $request)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|integer|min:1|max:6',
+        ]);
+
+        $user = $request->user();
+        $transaction = new Transaction();
+        $transaction->user_id = $user->id;
+        $transaction->brain_coins = $validated['amount'];
+        $transaction->type = 'B';
+        $transaction->transaction_datetime = now();
+
+        $user->brain_coins_balance +=$validated['amount'] ; 
+        $transaction->save();
+        $user->save();
+
+        return response()->json(['message' => 'Hint used successfully', 'user' => $user], 200);
+    }
+
+    public function storeHintANDBoardTAES(Request $request)
+    {
+        $user = $request->user();
+        $transaction = new Transaction();
+        $transaction->user_id = $user->id;
+        $transaction->brain_coins = -1;
+        $transaction->type = 'I';
+        $transaction->transaction_datetime = now();
+
+        $user->brain_coins_balance -=1; 
+        $transaction->save();
+        $user->save();
+
+        return response()->json(['message' => 'Hint used successfully'], 200);
+    }
     /**
      * Store a newly created resource in storage.
      */
@@ -321,43 +332,56 @@ class GameController extends Controller
         $boardId = $game->board_id; // Assuming the game has a board_id
         $player = $game->creator;   // Assuming the game is associated with a User model
 
-        $isTopTime = Game::whereNotNull('total_time') // Ensure total_time is not null
+        // Check global top 10 by total time
+        $topTimes = Game::whereNotNull('total_time') // Ensure total_time is not null
             ->orderBy('total_time', 'asc') // Ascending order for time
             ->take(10)
-            ->get()
-            ->contains('id', $game->id);
+            ->pluck('id')
+            ->toArray();
+        $isTopTime = array_search($game->id, $topTimes);
+        $isTopTime = $isTopTime !== false ? $isTopTime + 1 : 0; // Convert to 1-based index, or 0 if not found
 
-        $isTopTurns = Game::whereNotNull('total_turns_winner') // Ensure total_turns_winner is not null
+        // Check global top 10 by total turns
+        $topTurns = Game::whereNotNull('total_turns_winner') // Ensure total_turns_winner is not null
             ->orderBy('total_turns_winner', 'asc') // Ascending order for total turns
             ->take(10)
-            ->get()
-            ->contains('id', $game->id);
-        // Check if the new game qualifies for the player's personal top 3 by time
-        $isPersonalTopTime = Game::where('board_id', $boardId)
+            ->pluck('id')
+            ->toArray();
+        $isTopTurns = array_search($game->id, $topTurns);
+        $isTopTurns = $isTopTurns !== false ? $isTopTurns + 1 : 0; // Convert to 1-based index, or 0 if not found
+
+        // Check player's personal top 3 by total time
+        $personalTopTimes = Game::where('board_id', $boardId)
             ->where('created_user_id', $player->id)
             ->whereNotNull('total_time') // Ensure total_time is not null
             ->orderBy('total_time', 'asc') // Ascending order for time
             ->take(3)
-            ->get()
-            ->contains('id', $game->id);
+            ->pluck('id')
+            ->toArray();
+        $isPersonalTopTime = array_search($game->id, $personalTopTimes);
+        $isPersonalTopTime = $isPersonalTopTime !== false ? $isPersonalTopTime + 1 : 0; // Convert to 1-based index, or 0 if not found
 
-        // Check if the new game qualifies for the player's personal top 3 by total_turns_winner
-        $isPersonalTopTurns = Game::where('board_id', $boardId)
+        // Check player's personal top 3 by total turns
+        $personalTopTurns = Game::where('board_id', $boardId)
             ->where('created_user_id', $player->id)
             ->whereNotNull('total_turns_winner') // Ensure total_turns_winner is not null
             ->orderBy('total_turns_winner', 'asc') // Ascending order for total turns
             ->take(3)
-            ->get()
-            ->contains('id', $game->id);
+            ->pluck('id')
+            ->toArray();
+        $isPersonalTopTurns = array_search($game->id, $personalTopTurns);
+        $isPersonalTopTurns = $isPersonalTopTurns !== false ? $isPersonalTopTurns + 1 : 0; // Convert to 1-based index, or 0 if not found
+
 
 
 
         return response()->json([
             'message' => 'Game created successfully!',
-            'is_top_time' => $isTopTime,
-            'is_top_turns' => $isTopTurns,
-            'is_personal_top_time' => $isPersonalTopTime,
-            'is_personal_top_turns' => $isPersonalTopTurns,
+            'is_top_time' =>  $isTopTime,
+            'is_top_turns' =>  $isTopTurns,
+            'is_personal_top_time' =>  $isPersonalTopTime,
+            'is_personal_top_turns' =>  $isPersonalTopTurns,
+
         ], 201);
     }
 

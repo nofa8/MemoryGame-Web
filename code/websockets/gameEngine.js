@@ -14,9 +14,6 @@ exports.createGameEngine = () => {
         );
         gameFromDB.matchedPairs = [];
         gameFromDB.flippedCards = [];
-        gameFromDB.lastAction = { 1: 0, 2: 0 };
-        // gameFromDB.autoStart = true;
-        // gameFromDB.stopwatch = useStopwatch(gameFromDB.autoStart);
         return gameFromDB;
     };
 
@@ -128,7 +125,11 @@ exports.createGameEngine = () => {
     const changeGameStatus = (game) => {
         if (isGameComplete(game)) {
             if (game.pairsDiscovered[1] === game.pairsDiscovered[2]) {
-                game.gameStatus = 3; // Draw
+                if (game.currentPlayer == 1){
+                    game.gameStatus = 2; // Player 2 wins
+                }else{
+                    game.gameStatus = 1;
+                }
             } else {
                 game.gameStatus =
                     game.pairsDiscovered[1] > game.pairsDiscovered[2] ? 1 : 2; // Player 1 or 2 wins

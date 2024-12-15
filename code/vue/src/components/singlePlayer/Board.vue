@@ -49,6 +49,7 @@ const flip = (index) => {
   play(index)
   if (!startedFirstClick.value) {
     autoStart.value = true
+    startedFirstClick.value = true
   }
   if (!stopWorking.value) {
     stopwatch.start()
@@ -83,7 +84,7 @@ watch(status, (newValue) => {
           //update visual do necessário
         })
       } catch (e) {
-        console.log(e)
+        //console.log(e)
         storeError.setErrorMessages(
           e.response.data.message,
           e.response.data.errors,
@@ -108,7 +109,7 @@ watch(leaving, (newValue) => {
         //   //update visual do necessário
         // })
       } catch (e) {
-        console.log(e)
+        // console.log(e)
         storeError.setErrorMessages(
           e.response.data.message,
           e.response.data.errors,
@@ -171,7 +172,7 @@ const handleBeforeUnload = async (event) => {
 
       await axios.put(`/games/${game_id.value}`, payload)
 
-      console.log('Game status updated successfully.')
+      // console.log('Game status updated successfully.')
     } catch (error) {
       console.error('Error updating game status:', error)
     }

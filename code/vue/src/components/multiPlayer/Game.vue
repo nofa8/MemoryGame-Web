@@ -1,14 +1,25 @@
 <script setup>
-import { inject, watch } from 'vue'
+import { inject, ref, watch } from 'vue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { computed } from 'vue'
 import Board from './Board.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useMultiplayerGamesStore } from '@/stores/multiplayer'
+import { useStopwatch } from 'vue-timer-hook'
 
 const storeMultiGames = useMultiplayerGamesStore()
 const storeAuth = useAuthStore()
+const autoStart = ref(false)
+const stopwatch = useStopwatch(autoStart)
+
+const showSeconds = computed(() => {
+  return 20 - stopwatch.seconds.value
+})
+
+const interrupt = computed(() => {
+  return stopwatch.seconds.value >= 20
+})
 
 const props = defineProps({
   game: {
@@ -37,7 +48,17 @@ const currentUserTurn = computed(() => {
   if (gameEnded.value) {
     return false
   }
-  return props.game.currentPlayer === storeMultiGames.playerNumberOfCurrentUser(props.game)
+  if (props.game.currentPlayer === storeMultiGames.playerNumberOfCurrentUser(props.game)){
+    stopwatch.start()
+    return true
+  }
+  stopwatch.reset()
+  stopwatch.pause()
+  return false
+})
+
+const turns = computed(() => {
+  return props.game.turns[storeMultiGames.playerNumberOfCurrentUser(props.game)]
 })
 
 const cardBgColor = computed(() => {
@@ -94,7 +115,7 @@ const statusGameMessage = computed(() => {
         ? 'You won'
         : 'You lost'
     case 3:
-      return 'Draw'
+      return 'Draw' // Doesnt exist 
     default:
       return 'Not started!'
   }
@@ -103,6 +124,7 @@ const statusGameMessage = computed(() => {
 const playPieceOfBoard = (idx) => {
   if (!gameEnded.value && currentUserTurn.value && !wow.value) {
     storeMultiGames.play(props.game, idx)
+    stopwatch.reset()
   }
 }
 
@@ -120,6 +142,15 @@ const clickCardButton = () => {
   }
 }
 
+
+watch(interrupt, (newValue) => {
+  if (newValue === true) {
+    storeMultiGames.quit(props.game)
+  }
+})
+
+
+
 const close = () => {
   storeMultiGames.close(props.game)
 }
@@ -132,6 +163,13 @@ const quit = () => {
   <!-- <Card class="mx-auto my-8 p-2 px-4 min-w-[20rem] max-w-[25rem]"> -->
   <Card class="relative grow mx-4 mt-8 pt-2 pb-4 px-1" :class="cardBgColor">
     <CardHeader class="pb-0">
+      <p class="text-lg sm:text-xl text-gray-800 dark:text-gray-300">
+        ⏱ Time:
+        <span class="font-semibold text-black dark:text-white">{{ showSeconds }}</span>
+      </p>
+      <p class="text-lg sm:text-xl text-gray-800 dark:text-gray-300">
+        📋 Moves: <span class="font-semibold text-black dark:text-white">{{ turns }}</span>
+      </p>
       <Button @click="clickCardButton" class="absolute top-4 right-4" :class="buttonClasses">
         <!-- class="absolute -mt-8 -mr-20" :class="buttonClasses"> -->
         <svg

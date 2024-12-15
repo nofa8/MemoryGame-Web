@@ -33,7 +33,9 @@ const startGame = async (board) => {
 
     const response = await axios.post('/games', payload)
     const gameData = response.data.data
-    
+    if (board.id != 1){
+      storeAuth.user.brain_coins_balance -= 1
+    }
     router.push({
       name: 'game',
       query: {
@@ -42,6 +44,7 @@ const startGame = async (board) => {
         board_rows: board.rows
       }
     })
+    
   } catch (e) {
     storeError.setErrorMessages(
       e.response?.data?.message || 'An error occurred',

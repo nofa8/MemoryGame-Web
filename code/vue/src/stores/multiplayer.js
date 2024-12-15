@@ -129,7 +129,7 @@ export const useMultiplayerGamesStore = defineStore('multiPlayerGames', () => {
       });
 
       const updatedGameOnDB = APIresponse.data.data
-      console.log('Game has ended and updated on the database: ', updatedGameOnDB)
+      // console.log('Game has ended and updated on the database: ', updatedGameOnDB)
     }
   })
   socket.on('gameChanged', (game) => {
@@ -158,7 +158,7 @@ export const useMultiplayerGamesStore = defineStore('multiPlayerGames', () => {
         game.gameStatus === 1 ? game.player1_id : game.gameStatus === 2 ? game.player2_id : null
     })
     const updatedGameOnDB = APIresponse.data.data
-    console.log('Game was interrupted and updated on the database: ', updatedGameOnDB)
+    // console.log('Game was interrupted and updated on the database: ', updatedGameOnDB)
   })
 
   return {

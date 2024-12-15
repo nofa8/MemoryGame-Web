@@ -31,11 +31,10 @@ const socketTAES = inject('socket')
 
 const changedTAES = (value) => {
   if (authStore.user != null) {
-    socketTAES.on(
+    socketTAES.emit(
       'transactionTAES',
-      authStore.user,
-      `Purchase complete: ${value} brain coins added to a total of ${authStore.userbrain_coins_balance} brain coins!`
-    )
+    authStore.user,
+      `Purchase complete: ${value} brain coins added to a total of ${authStore.userbrain_coins_balance} brain coins!`)
   }
 }
 
