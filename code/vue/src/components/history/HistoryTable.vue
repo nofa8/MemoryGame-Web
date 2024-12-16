@@ -22,11 +22,9 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="container mx-auto p-4 space-y-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Game History</h2>
         <div class="bg-white shadow-xl rounded-lg overflow-hidden">
-            <div class="px-4 py-5 sm:px-6 bg-gray-50 border-b border-gray-200">
-                <h2 class="text-2xl font-bold text-gray-800">Game History</h2>
-            </div>
 
             <HistoryFilters @apply-filters="handleFilters" />
 

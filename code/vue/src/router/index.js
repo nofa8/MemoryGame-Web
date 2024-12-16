@@ -17,6 +17,8 @@ import SinglePlayerGame from '@/components/singlePlayer/SinglePlayerGame.vue'
 import TransactionsTable from '@/components/transactions/TransactionsTable.vue'
 import Purchases from '@/components/transactions/PurchasesPage.vue'
 
+import Statistics from '@/components/statistics/StatisticsPage.vue'
+
 import { useAuthStore } from '@/stores/auth'
 import { createRouter, createWebHistory } from 'vue-router'
 
@@ -89,6 +91,11 @@ const router = createRouter({
       path: '/purchase',
       name: 'Purchase',
       component: Purchases
+    },
+    {
+      path: '/statistics',
+      name: 'statistics',
+      component: Statistics
     }
   ]
 })
