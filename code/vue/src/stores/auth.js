@@ -8,7 +8,7 @@ import router from '@/router'
 
 export const useAuthStore = defineStore('auth', () => {
   const storeError = useErrorStore()
- 
+
   const user = ref(null)
   const token = ref('')
   const socket = inject('socket')
@@ -60,7 +60,11 @@ export const useAuthStore = defineStore('auth', () => {
   const userPhotoUrl = computed(() => {
     const photoFile = user.value ? (user.value.photoFileName ?? '') : ''
     if (photoFile) {
-      return axios.defaults.baseURL.replace('/api', photoFile)
+      if (axios.defaults.baseURL.includes('api-dad')) {
+        return axios.defaults.baseURL.replace('o/api', 'o' + photoFile)
+      } else {
+        return axios.defaults.baseURL.replace('/api', photoFile)
+      }
     }
     return avatarNoneAssetURL
   })
@@ -77,51 +81,50 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const login = async (credentials) => {
-    storeError.resetMessages();
+    storeError.resetMessages()
     try {
-      const responseLogin = await axios.post('auth/login', credentials);
-      token.value = responseLogin.data.token;
-      localStorage.setItem('token', token.value);
-      axios.defaults.headers.common.Authorization = 'Bearer ' + token.value;
+      const responseLogin = await axios.post('auth/login', credentials)
+      token.value = responseLogin.data.token
+      localStorage.setItem('token', token.value)
+      axios.defaults.headers.common.Authorization = 'Bearer ' + token.value
 
-      const responseUser = await axios.get('users/me');
-      user.value = responseUser.data.data;
-      socket.emit('login', user.value);
+      const responseUser = await axios.get('users/me')
+      user.value = responseUser.data.data
+      socket.emit('login', user.value)
       // console.log(user.value)
-      repeatRefreshToken();
-      
-      router.push({ name: 'singlePlayerGames' });
+      repeatRefreshToken()
 
-      return user.value;
+      router.push({ name: 'singlePlayerGames' })
+
+      return user.value
     } catch (e) {
-      clearUser();
+      clearUser()
       storeError.setErrorMessages(
         e.response.data.message,
         e.response.data.errors,
         e.response.status,
         'Authentication Error!'
-      );
-      return false;
+      )
+      return false
     }
   }
 
   const logout = async () => {
-    storeError.resetMessages();
+    storeError.resetMessages()
     try {
       await axios.post('auth/logout')
       clearUser()
-      router.push({name:"singlePlayerGames"})
+      router.push({ name: 'singlePlayerGames' })
       return true
-
     } catch (e) {
-      clearUser();
+      clearUser()
       storeError.setErrorMessages(
         e.response.data.message,
         [],
         e.response.status,
         'Authentication Error!'
-      );
-      return false;
+      )
+      return false
     }
   }
 
@@ -133,8 +136,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
     intervalToRefreshToken = null
   }
- 
-
 
   const repeatRefreshToken = () => {
     if (intervalToRefreshToken) {
@@ -165,23 +166,23 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const restoreLogin = async function () {
-    const storedToken = localStorage.getItem('token');
+    const storedToken = localStorage.getItem('token')
     if (storedToken) {
       try {
-        token.value = storedToken;
-        axios.defaults.headers.common.Authorization = 'Bearer ' + token.value;
-        const responseUser = await axios.get('users/me');
-        user.value = responseUser.data.data;
-        socket.emit('login', user.value);
+        token.value = storedToken
+        axios.defaults.headers.common.Authorization = 'Bearer ' + token.value
+        const responseUser = await axios.get('users/me')
+        user.value = responseUser.data.data
+        socket.emit('login', user.value)
         // console.log(user.value)
-        repeatRefreshToken();
-        return true;
+        repeatRefreshToken()
+        return true
       } catch {
-        clearUser();
-        return false;
+        clearUser()
+        return false
       }
     }
-    return false;
+    return false
   }
 
   const setUser = (userData) => {
@@ -190,20 +191,19 @@ export const useAuthStore = defineStore('auth', () => {
   const fetchUsers = async ({ search = '', type = '', page = 1, include_deleted = false } = {}) => {
     try {
       // Construct the query string including include_deleted
-      const response = await axios.get(`/users?page=${page}&search=${search}&type=${type}&include_deleted=${include_deleted}`);
+      const response = await axios.get(
+        `/users?page=${page}&search=${search}&type=${type}&include_deleted=${include_deleted}`
+      )
 
-      users.value = response.data.data;
-      currentPage.value = response.data.meta.current_page;
-      lastPage.value = response.data.meta.last_page;
-      total.value = response.data.meta.total;
-      perPage.value = response.data.meta.per_page;
-
-
+      users.value = response.data.data
+      currentPage.value = response.data.meta.current_page
+      lastPage.value = response.data.meta.last_page
+      total.value = response.data.meta.total
+      perPage.value = response.data.meta.per_page
     } catch (err) {
-      console.error('Failed to load profiles. Please try again later.', err);
+      console.error('Failed to load profiles. Please try again later.', err)
     }
-  };
-  
+  }
 
   return {
     user,

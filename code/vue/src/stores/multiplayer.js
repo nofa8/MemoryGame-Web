@@ -16,23 +16,20 @@ export const useMultiplayerGamesStore = defineStore('multiPlayerGames', () => {
   const wrongSound = new Audio('/wrong.mp3')
   correctSound.preload = 'auto'
   wrongSound.preload = 'auto'
-  
 
   const totalGames = computed(() => games.value.length)
   const updateGame = (game) => {
     const gameIndex = games.value.findIndex((g) => g.id === game.id)
     if (gameIndex !== -1) {
-      
-      
       games.value[gameIndex] = { ...game } // shallow copy
 
-      if (game.flippedCards.length == 2){
-        if (game.flippedCards[0].value== game.flippedCards[1].value) {
+      if (game.flippedCards.length == 2) {
+        if (game.flippedCards[0].value == game.flippedCards[1].value) {
           correctSound.play()
         } else {
           wrongSound.play()
         }
-        game.flippedCards = [];
+        game.flippedCards = []
       }
     }
   }
@@ -101,7 +98,7 @@ export const useMultiplayerGamesStore = defineStore('multiPlayerGames', () => {
       if (webSocketServerResponseHasError(response)) {
         return
       }
-      
+
       removeGameFromList(game)
     })
   }
@@ -114,22 +111,26 @@ export const useMultiplayerGamesStore = defineStore('multiPlayerGames', () => {
       })
     }
     fetchPlayingGames()
+    storeAuth.user.brain_coins_balance -= 5
   })
   socket.on('gameEnded', async (game) => {
     updateGame(game)
-    
+
     const currentUser = playerNumberOfCurrentUser(game)
-    if (currentUser === 1 ||currentUser==2) {
+    if (currentUser === 1 || currentUser == 2) {
       const APIresponse = await axios.patch('multiplayer-games/' + game.id, {
-        turns: game.turns[currentUser], 
-        status: game.status, 
+        turns: game.turns[currentUser],
+        status: game.status,
         pairs_discovered: game.pairsDiscovered[currentUser], // The number of pairs matched in the game
-        won: game.gameStatus ===currentUser ? 1 : 0, 
-        user_id: storeAuth.userId, 
-      });
+        won: game.gameStatus === currentUser ? 1 : 0,
+        user_id: storeAuth.userId
+      })
 
       const updatedGameOnDB = APIresponse.data.data
       // console.log('Game has ended and updated on the database: ', updatedGameOnDB)
+      if (currentUser == game.gameStatus) {
+        storeAuth.user.brain_coins_balance += 7
+      }
     }
   })
   socket.on('gameChanged', (game) => {

@@ -14,9 +14,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/gamesTAES', [GameController::class, "indexTAES"]); // Get games
 Route::post('/gamesTAES', [GameController::class, 'storeTAES']);
 
-
-
-
 ///////////////////////////////////
 Route::post('/auth/login', [AuthController::class, "login"]);
 Route::post('auth/register', [AuthController::class, "register"]);
@@ -25,18 +22,18 @@ Route::post('auth/register', [AuthController::class, "register"]);
 Route::get('/boards', [BoardController::class, "index"]);
 Route::get('/scoreboardGlobal', [GameController::class, 'indexScoreboardGlobal']);
 
-Route::get('statistics', [StatisticsController::class, 'getStatistics']);	
+Route::get('statistics', [StatisticsController::class, 'getStatistics']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     // Route::get('/users/me', function (Request $request) {return $request->user();});
-    Route::put('/users/me', [UserController::class, 'updateProfile']); 
+    Route::put('/users/me', [UserController::class, 'updateProfile']);
     Route::get('/users/me', [UserController::class, 'showMe']);
     Route::delete('/users/me', [UserController::class, 'deleteProfile']);
-    
+
     Route::get('/users', [UserController::class, 'indexAll']);
     Route::post('users/image', [UserController::class, 'updateProfilePicture']);
     Route::patch('/users/{nickname}', [UserController::class, 'blockOrUnblockAccount']);
-    
+
 
     Route::get('/history', [GameController::class, 'indexHistory']);
 
@@ -51,7 +48,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/gamesPersonalTAES', [GameController::class, 'indexScoreboardPersonalTAES']);
     Route::post('/gamesTAES/hintNboard', [GameController::class, 'storeHintANDBoardTAES']);
     Route::post('gamesTAES/bonusBrainCoins', [GameController::class, 'bonusBrainCoinsTAES']);
-    
+
     ///////////////////////////////////////////////////////
 
 

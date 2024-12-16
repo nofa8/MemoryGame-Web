@@ -3,7 +3,7 @@ import { useAuthStore } from '@/stores/auth'
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
-const emit = defineEmits()
+const emit = defineEmits(['back-to-profile'])
 const authStore = useAuthStore()
 const name = ref('')
 const email = ref('')

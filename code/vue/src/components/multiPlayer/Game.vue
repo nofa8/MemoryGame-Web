@@ -48,7 +48,7 @@ const currentUserTurn = computed(() => {
   if (gameEnded.value) {
     return false
   }
-  if (props.game.currentPlayer === storeMultiGames.playerNumberOfCurrentUser(props.game)){
+  if (props.game.currentPlayer === storeMultiGames.playerNumberOfCurrentUser(props.game)) {
     stopwatch.start()
     return true
   }
@@ -83,6 +83,7 @@ const statusMessageColor = computed(() => {
       return currentUserTurn.value ? 'text-green-400' : 'text-slate-400'
     case 1:
     case 2:
+      stopwatch.reset()
       return storeMultiGames.playerNumberOfCurrentUser(props.game) == props.game.gameStatus
         ? 'text-green-900'
         : 'text-red-900'
@@ -115,7 +116,7 @@ const statusGameMessage = computed(() => {
         ? 'You won'
         : 'You lost'
     case 3:
-      return 'Draw' // Doesnt exist 
+      return 'Draw' // Doesnt exist
     default:
       return 'Not started!'
   }
@@ -142,14 +143,11 @@ const clickCardButton = () => {
   }
 }
 
-
 watch(interrupt, (newValue) => {
   if (newValue === true) {
     storeMultiGames.quit(props.game)
   }
 })
-
-
 
 const close = () => {
   storeMultiGames.close(props.game)
