@@ -222,14 +222,14 @@ class GameController extends Controller
 
     public function indexScoreboardGlobal()
     {
-        $bestTimes = Game::where('type', 'S')
-            ->where('total_time', '<>', null)
+        $bestTimes = Game::where([['type', 'S'], ['total_time', '<>', null]])
             ->whereHas('creator', function ($query) {
                 $query->whereNull('deleted_at');
             })
             ->select('board_id', DB::raw('MIN(total_time) as total_time'), 'created_user_id')
-            ->with(['board:id,board_cols,board_rows', 'creator:id,nickname'])
-            ->groupBy('board_id', 'created_user_id')
+            ->with(['board', 'creator'])
+            ->orderBy('total_time', 'desc')
+            ->groupBy('board_id', 'created_user_id')           
             ->get()
             ->mapWithKeys(function ($item) {
                 return [$item->board_id => [
@@ -246,7 +246,7 @@ class GameController extends Controller
             })
             ->select('board_id', DB::raw('MIN(total_turns_winner) as total_turns'), 'created_user_id')
             ->with(['board', 'creator'])
-
+            ->orderBy('total_turns', 'desc')
             ->groupBy('board_id', 'created_user_id')
             ->get()
             ->mapWithKeys(function ($item) {
