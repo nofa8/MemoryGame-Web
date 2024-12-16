@@ -30,7 +30,7 @@ class GameController extends Controller
     //  */
     public function indexTAES()
     {
-        $games = Game::where('status', 'E')->where('type', "S")->orderBy('total_time', 'asc')->orderBy('total_turns_winner','asc')->with(['creator'])->take(10)->get();
+        $games = Game::where('status', 'E')->where('type', "S")->orderBy('total_time', 'asc')->orderBy('total_turns_winner', 'asc')->with(['creator'])->take(10)->get();
         return GameResource::collection($games);
     }
 
@@ -143,7 +143,7 @@ class GameController extends Controller
             ->where('total_time', '<>', null)
             ->with('board')
             ->select('board_id', 'total_time', 'board_id')
-            ->with('board')
+            ->orderBy('total_time', 'asc')
             ->get()
             ->groupBy(function ($item) {
                 return $item->board->board_cols . 'x' . $item->board->board_rows;
@@ -166,7 +166,7 @@ class GameController extends Controller
             ->where('total_turns_winner', '<>', null)
             ->with('board')
             ->select('board_id', 'total_turns_winner', 'board_id')
-            ->with('board')
+            ->orderBy('total_turns_winner', 'asc')
             ->get()
             ->groupBy(function ($item) {
                 return $item->board->board_cols . 'x' . $item->board->board_rows;
@@ -224,13 +224,12 @@ class GameController extends Controller
     {
         $bestTimes = Game::where('type', 'S')
             ->where('total_time', '<>', null)
-            ->select('board_id', DB::raw('MIN(total_time) as total_time'), 'created_user_id')
-            ->with(['board:id,board_cols,board_rows', 'creator:id,nickname'])
             ->whereHas('creator', function ($query) {
                 $query->whereNull('deleted_at');
             })
+            ->select('board_id', DB::raw('MIN(total_time) as total_time'), 'created_user_id')
+            ->with(['board:id,board_cols,board_rows', 'creator:id,nickname'])
             ->groupBy('board_id', 'created_user_id')
-            ->orderBy('total_time', 'asc')
             ->get()
             ->mapWithKeys(function ($item) {
                 return [$item->board_id => [
@@ -242,13 +241,13 @@ class GameController extends Controller
             });
 
         $minTurns = Game::where([['type', 'S'], ['total_turns_winner', '<>', null]])
-            ->select('board_id', DB::raw('MIN(total_turns_winner) as total_turns'), 'created_user_id')
-            ->with(['board', 'creator'])
             ->whereHas('creator', function ($query) {
                 $query->whereNull('deleted_at');
             })
+            ->select('board_id', DB::raw('MIN(total_turns_winner) as total_turns'), 'created_user_id')
+            ->with(['board', 'creator'])
+
             ->groupBy('board_id', 'created_user_id')
-            ->orderBy('total_turns', 'desc')
             ->get()
             ->mapWithKeys(function ($item) {
                 return [$item->board_id => [
@@ -300,7 +299,7 @@ class GameController extends Controller
         $transaction->type = 'B';
         $transaction->transaction_datetime = now();
 
-        $user->brain_coins_balance +=$validated['amount'] ; 
+        $user->brain_coins_balance += $validated['amount'];
         $transaction->save();
         $user->save();
 
@@ -316,7 +315,7 @@ class GameController extends Controller
         $transaction->type = 'I';
         $transaction->transaction_datetime = now();
 
-        $user->brain_coins_balance -=1; 
+        $user->brain_coins_balance -= 1;
         $transaction->save();
         $user->save();
 

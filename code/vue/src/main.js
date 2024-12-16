@@ -27,5 +27,4 @@ axios.defaults.baseURL = `http://${apiDomain}/api`
 
 app.component('ErrorMessage', ErrorMessage)
 
-
 app.mount('#app')
