@@ -4,11 +4,11 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BoardController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\MultiplayerGamesPlayedController;
+use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
 
 // Specific for TAES
 Route::get('/gamesTAES', [GameController::class, "indexTAES"]); // Get games
@@ -25,7 +25,7 @@ Route::post('auth/register', [AuthController::class, "register"]);
 Route::get('/boards', [BoardController::class, "index"]);
 Route::get('/scoreboardGlobal', [GameController::class, 'indexScoreboardGlobal']);
 
-
+Route::get('statistics', [StatisticsController::class, 'getStatistics']);	
 
 Route::middleware(['auth:sanctum'])->group(function () {
     // Route::get('/users/me', function (Request $request) {return $request->user();});
