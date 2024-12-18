@@ -13,7 +13,6 @@ class Game extends Model
         'type',
         'status',
         'total_time',
-        'image',
         'created_user_id',
         'winner_user_id',
         'began_at',

@@ -45,7 +45,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     ///////////////////////////TAES
     Route::get('/historyTAES', [GameController::class, 'indexHistoryTAES']);
-    Route::get('/gamesPersonalTAES', [GameController::class, 'indexScoreboardPersonalTAES']);
+    Route::get('/gamesPersonalTimeTAES', [GameController::class, 'indexScoreboardPersonalTimeTAES']);
+    Route::get('/gamesPersonalTurnTAES', [GameController::class, 'indexScoreboardPersonalTurnTAES']);
     Route::post('/gamesTAES/hintNboard', [GameController::class, 'storeHintANDBoardTAES']);
     Route::post('gamesTAES/bonusBrainCoins', [GameController::class, 'bonusBrainCoinsTAES']);
 

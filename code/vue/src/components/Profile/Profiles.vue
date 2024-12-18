@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, inject } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import ProfileInfo from './ProfileInfo.vue';
 import AdminCreate from './AdminCreate.vue';
@@ -12,7 +12,7 @@ const createAdminform = ref(false);
 const searchQuery = ref('');
 const selectedUserType = ref('');
 const currentPage = ref(1);
-
+const url = inject("serverBaseUrl")
 if (!authStore.user) {
     router.push("login");
 }
@@ -72,9 +72,9 @@ const searchName = () => {
 // Function to get user photo URL
 const getPhotoUrl = (photoFileName) => {
     if (photoFileName) {
-        return `${axios.defaults.baseURL.replace('/api', '')}/storage/photos/${photoFileName}`;
+        return `http://${url}/storage/photos/${photoFileName}`;
     }
-    return `${axios.defaults.baseURL.replace('/api', '')}/storage/photos/anonymous.jpg`;
+    return `http://${url}/storage/photos/anonymous.jpg`;
 };
 
 // Handle user deletion

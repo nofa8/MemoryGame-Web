@@ -60,7 +60,7 @@ export const useAuthStore = defineStore('auth', () => {
   const userPhotoUrl = computed(() => {
     const photoFile = user.value ? (user.value.photoFileName ?? '') : ''
     if (photoFile) {
-      if (axios.defaults.baseURL.includes('api-dad')) {
+      if (axios.defaults.baseURL.endsWith('io/api')) {
         return axios.defaults.baseURL.replace('o/api', 'o' + photoFile)
       } else {
         return axios.defaults.baseURL.replace('/api', photoFile)
