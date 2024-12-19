@@ -12,7 +12,7 @@ onMounted(() => {
         <div class="bg-white shadow-2xl rounded-xl overflow-hidden">
             <div class="bg-gradient-to-r from-purple-500 to-pink-600 p-6">
                 <h3 class="text-2xl font-bold text-white tracking-wide">
-                    Multiplayer Statistics
+                    Multiplayer
                 </h3>
             </div>
 
