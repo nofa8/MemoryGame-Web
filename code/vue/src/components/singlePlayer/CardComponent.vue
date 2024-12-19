@@ -1,27 +1,39 @@
 <script setup>
-const props = defineProps(['piece', 'index', 'isFlipped', 'isMatched']);
-const emit = defineEmits(['flip']);
+import { ref, watch } from 'vue'
+
+const props = defineProps(['piece', 'index', 'isFlipped', 'isMatched'])
+const emit = defineEmits(['flip'])
 
 // Audio for card flip
-const flipSound = new Audio('/flip.mp3');
-flipSound.preload = 'auto';
+const flipSound = new Audio('/flip.mp3')
+flipSound.preload = 'auto'
 
 const flipCard = () => {
   // Emit the flip event only if the card is not already flipped or matched
   if (!props.isFlipped && !props.isMatched) {
-    flipSound.play(); // Play the flip sound
-    emit('flip', props.index);
+    flipSound.play() // Play the flip sound
+    emit('flip', props.index)
   }
 }
+
+const hidden = ref(false)
+
+watch(
+  () => props.isMatched,
+  (newVal) => {
+    if (newVal == true) {
+      setTimeout(() => (hidden.value = true), 1000)
+    }
+  }
+)
 </script>
 
 <template>
-  <div class="card" @click="flipCard">
+  <div class="card" :style="{ visibility: hidden ? 'hidden' : 'visible' }">
     <div
-      :class="[
-        'card-inner',
-        { 'is-flipped': props.isFlipped || props.isMatched }
-      ]"
+      
+      @click="flipCard"
+      :class="['card-inner', { 'is-flipped': props.isFlipped || props.isMatched }]"
     >
       <!-- Front of the card -->
       <div class="card-front">
@@ -44,6 +56,11 @@ const flipCard = () => {
   cursor: pointer;
 }
 
+.cardNono {
+  width: 100px;
+  height: 150px;
+  cursor: pointer;
+}
 .card-inner {
   width: 100%;
   height: 100%;

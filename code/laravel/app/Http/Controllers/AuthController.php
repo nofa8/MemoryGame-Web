@@ -109,8 +109,7 @@ class AuthController extends Controller
         $transaction->brain_coins = 10;
         $transaction->type = 'B';
         $transaction->transaction_datetime = now();
-
-
+        $transaction->save();
         return response()->json([
             'message' => 'User registered successfully',
             'user' => $user,

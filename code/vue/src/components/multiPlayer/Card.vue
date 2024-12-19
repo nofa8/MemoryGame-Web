@@ -1,9 +1,8 @@
 <script setup>
-import { watch } from 'vue';
+import { ref, watch } from 'vue';
 
 const props = defineProps(['piece', 'index', 'isFlipped', 'isMatched']);
 const emit = defineEmits(['flip']);
-
 // Audio for card flip
 const flipSound = new Audio('/flip.mp3');
 flipSound.preload = 'auto';
@@ -22,11 +21,20 @@ watch(() => props.isFlipped, (newVal) => {
   }
 })
 
+const hidden = ref(false)
+
+watch(()=> props.isMatched, (newVal) => {
+  if (newVal == true){
+    setTimeout(
+       () => hidden.value = true, 1000
+    )
+  }
+})
 </script>
 
 <template>
-  <div class="card" @click="flipCard">
-    <div
+  <div class="card"  :style="{ visibility: hidden ? 'hidden' : 'visible' }">
+    <div  @click="flipCard"
       :class="[
         'card-inner',
         { 'is-flipped': props.isFlipped || props.isMatched }

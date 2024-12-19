@@ -24,6 +24,7 @@ class GameUpdateRequest extends FormRequest
         return [
             'turns' => 'sometimes|integer',
             'status' => 'required|string|in:E,I',
+            'start_time' => 'sometimes|string'
         ];
     }
 }

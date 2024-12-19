@@ -517,7 +517,12 @@ class GameController extends Controller
         if ($validated['status'] === 'E' &&  is_null($validated['turns'])) {
             return response()->json(['error' => 'When a game ends, total number of turns is required'], 400);
         }
+        if ($validated['status'] === 'E' && !array_key_exists('start_time', $validated)) {
+            return response()->json(['error' => 'When a game ends, start time is required'], 400);
+        }
 
+        $game->began_at = Carbon::createFromFormat('d/m/Y, H:i:s', $validated['start_time']);
+        $game->save();
         $result =  $this->updateSinglePlayerGame($game, $validated);
 
 
@@ -545,7 +550,7 @@ class GameController extends Controller
 
     private function calculateGameTime(Game $game)
     {
-        $began_at = Carbon::parse($game->created_at);
+        $began_at = Carbon::parse($game->began_at);
         $ended_at = Carbon::parse($game->ended_at);
         $game->total_time = number_format($began_at->floatDiffInSeconds($ended_at), 2);
     }

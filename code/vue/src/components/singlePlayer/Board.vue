@@ -22,6 +22,8 @@ const rows = ref(0)
 const cols = ref(0)
 const lastAction = ref(0)
 const leaving = ref(false)
+const startTime = ref(null)
+
 game_id.value = route.query?.game_id ?? null
 rows.value = route.query?.board_rows ?? 4
 cols.value = route.query?.board_cols ?? 3
@@ -34,6 +36,8 @@ const { status, board, moves, matchedPairs, streak, bestStreak, start, play } = 
 const alertDialog = inject('alertDialog')
 const autoStart = ref(false)
 const stopwatch = useStopwatch(autoStart)
+
+stopwatch.pause()
 const startedFirstClick = ref(false)
 
 const showSeconds = computed(() => {
@@ -49,7 +53,10 @@ const flip = (index) => {
   play(index)
   if (!startedFirstClick.value) {
     autoStart.value = true
+    stopwatch.start()
     startedFirstClick.value = true
+    startTime.value = new Date().toLocaleString()
+
   }
   if (!stopWorking.value) {
     stopwatch.start()
@@ -67,18 +74,18 @@ watch(status, (newValue) => {
     alertDialog.value.open(
       mainPage,
       'Game Won!',
-      'Exit',
+      'See Info',
       'Next',
-      `The game has ended! 🏆\n\nWould you like to go to the game selecter and challenge yourself again, or exit the game?\n\nYour choice will determine your next step!` // Description text
+      `The game has ended! 🏆\n\nWould you like to go to the game selecter and challenge yourself again, or exit the game?\n\nTime: ${showSeconds.value}!` // Description text
     )
 
     if (storeAuth.user != null) {
       try {
         const payload = {
           status: 'E',
-          turns: moves.value
+          turns: moves.value,
+          start_time: startTime.value 
         }
-
         const response = axios.put(`/games/${game_id.value}`, payload).then((response) => {
           //console.log(response.data.data)
           //update visual do necessário
