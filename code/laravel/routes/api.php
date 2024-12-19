@@ -7,14 +7,14 @@ use App\Http\Controllers\MultiplayerGamesPlayedController;
 use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TransactionController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Specific for TAES
 Route::get('/gamesTAES', [GameController::class, "indexTAES"]); // Get games
-Route::post('/gamesTAES', [GameController::class, 'storeTAES']);
 
 ///////////////////////////////////
+
+
 Route::post('/auth/login', [AuthController::class, "login"]);
 Route::post('auth/register', [AuthController::class, "register"]);
 
@@ -30,18 +30,21 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/users/me', [UserController::class, 'showMe']);
     Route::delete('/users/me', [UserController::class, 'deleteProfile']);
 
-    Route::get('/users', [UserController::class, 'indexAll']);
     Route::post('users/image', [UserController::class, 'updateProfilePicture']);
     Route::patch('/users/{nickname}', [UserController::class, 'blockOrUnblockAccount']);
+    Route::get('/users', [UserController::class, 'indexAll']);
 
 
     Route::get('/history', [GameController::class, 'indexHistory']);
 
-    Route::patch('/auth/admin/{nickname}', [UserController::class, 'restore']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::post('/auth/refreshtoken', [AuthController::class, 'refreshToken']);
+
+    Route::patch('/auth/admin/{nickname}', [UserController::class, 'restore']);
     Route::post('/auth/admin', [AuthController::class, 'createAdmin']);
     Route::delete('/auth/admin/{nickname}', [UserController::class, 'deleteUserAsAdmin']);
+
+
 
     ///////////////////////////TAES
     Route::get('/historyTAES', [GameController::class, 'indexHistoryTAES']);
@@ -49,6 +52,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/gamesPersonalTurnTAES', [GameController::class, 'indexScoreboardPersonalTurnTAES']);
     Route::post('/gamesTAES/hintNboard', [GameController::class, 'storeHintANDBoardTAES']);
     Route::post('gamesTAES/bonusBrainCoins', [GameController::class, 'bonusBrainCoinsTAES']);
+    Route::post('/gamesTAES', [GameController::class, 'storeTAES']);
 
     ///////////////////////////////////////////////////////
 

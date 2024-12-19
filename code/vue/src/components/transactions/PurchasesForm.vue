@@ -31,8 +31,7 @@ const socketTAES = inject('socket')
 
 const changedTAES = (value) => {
   if (authStore.user != null) {
-    socketTAES.emit(
-      'transactionTAES',
+    socketTAES.emit("transactionTAES",
     authStore.user,
       `Purchase complete: ${value} brain coins added to a total of ${authStore.userbrain_coins_balance} brain coins!`)
   }
@@ -71,7 +70,7 @@ const submitTransaction = async () => {
       authStore.user.brain_coins_balance = response.data.data.user_total_brain_coins
     })
     successMessage.value = 'Purchase made successfully!'
-    changedTAES(variable.value)
+    changedTAES(brainCoins.value)
   } catch (error) {
     if (error.response && error.response.status === 422) {
       errorMessage.value =

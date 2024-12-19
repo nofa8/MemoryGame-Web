@@ -35,6 +35,7 @@ class GameController extends Controller
             ->where('status', 'E')
             ->where('total_time', '<>', null)
             ->with('board', 'creator')  // Eager load the 'board' relationship
+            ->orderBy('board_id', 'asc')
             ->orderBy('total_time', 'asc')  // Ensure the times are ordered by best times
             ->get()
             ->groupBy('board_id')  // Group by board_id

@@ -129,7 +129,7 @@ router.beforeEach(async (to, from, next) => {
     }
   } else {
     if (to.name == 'login') {
-      router.push({ name: 'Purchase' })
+      router.push({ name: 'profile' })
     }
 
     if (storeAuth.user.type == 'A') {
