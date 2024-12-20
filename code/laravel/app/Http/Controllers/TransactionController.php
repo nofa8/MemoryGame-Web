@@ -49,8 +49,7 @@ class TransactionController extends Controller
         }
 
 
-
-        $transactions = $query->orderBy('transaction_datetime', 'desc')->paginate(10);
+        $transactions = $query->with(['user'])->orderBy('transaction_datetime', 'desc')->paginate(10);
 
         return response()->json([
             'data' => TransactionResource::collection($transactions),

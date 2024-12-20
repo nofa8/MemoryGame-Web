@@ -91,8 +91,8 @@ onMounted(() => {
             </p>
             <p v-if="transaction.game_id != null">GAME ID: {{ transaction.game_id }}</p>
 
-            <p v-if="storeAuth.userType == 'A'">USER ID : {{ transaction.user_id }}</p>
-
+            <p v-if="storeAuth.userType == 'A'">NICKNAME: {{ transaction.nickname }}</p>
+ 
             <p
               v-if="expandedTransactionId === transaction.id"
               :class="{
