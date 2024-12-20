@@ -253,6 +253,9 @@ class GameController extends Controller
         $games = Game::where('created_user_id', $userId)
             ->where('status', 'E')
             ->where('type', "S")
+            ->whereHas('creator', function ($query) {
+                $query->whereNull('deleted_at');
+            })
             ->orderBy('total_turns_winner', 'asc')
             ->orderBy('total_time', 'asc')
             ->with(['creator'])
