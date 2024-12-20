@@ -15,7 +15,18 @@ class StatisticsController extends Controller
         $totalGames = Game::count();
         $gamesLastWeek = Game::where('began_at', '>=', now()->subWeek())->count();
         $gamesLastMonth = Game::where('began_at', '>=', now()->subMonth())->count();
-        $purchasesByTimePeriod = Transaction::selectRaw('DATE_FORMAT(transaction_datetime, "%Y-%m") as period, SUM(brain_coins) as total')
+
+        $year = $request->input('year', date('Y'));
+
+        $availableYears = Transaction::selectRaw('DISTINCT YEAR(transaction_datetime) as year')
+            ->orderBy('year', 'desc')
+            ->pluck('year');
+
+        $purchasesByTimePeriod = Transaction::selectRaw('
+                        DATE_FORMAT(transaction_datetime, "%Y-%m") as period,
+                        SUM(brain_coins) as total
+                    ')
+            ->whereYear('transaction_datetime', $year)
             ->groupBy('period')
             ->orderBy('period', 'asc')
             ->get();
@@ -33,6 +44,7 @@ class StatisticsController extends Controller
             'totalGames' => $totalGames,
             'gamesLastWeek' => $gamesLastWeek,
             'gamesLastMonth' => $gamesLastMonth,
+            'availableYears' => $availableYears,
             'purchasesByTimePeriod' => $purchasesByTimePeriod,
             'purchasesByPlayer' => $purchasesByPlayer,
         ]);

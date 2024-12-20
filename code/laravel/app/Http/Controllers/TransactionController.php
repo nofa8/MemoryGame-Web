@@ -15,24 +15,23 @@ class TransactionController extends Controller
 {
 
 
-    public function storeTAES (Request $request){
+    public function storeTAES(Request $request)
+    {
         $validated = $request->validate([
             'value' => 'required|integer',
         ]);
         $user = $request->user();
         $transaction = new Transaction();
         $transaction->user_id = $user->id;
-        $transaction->brain_coins =$validated["value"] ;
+        $transaction->brain_coins = $validated["value"];
         $transaction->type = 'I';
         $transaction->transaction_datetime = now();
-        
+
         $user->brain_coins_balance += $validated["value"];
         $user->save();
         $transaction->save();
 
-        return response()->json(["user"=> $user], 200);
-
-
+        return response()->json(["user" => $user], 200);
     }
 
     public function index(Request $request)
@@ -40,17 +39,27 @@ class TransactionController extends Controller
         $user = $request->user();
         $query = Transaction::query();
 
+
         if ($request->has('type')) {
             $query->where('type', $request->input('type'));
         }
+
 
         if ($user->type !== 'A') {
             $query->where('user_id', $user->id);
         }
 
 
+        if ($request->filled('nickname')) {
+            $query->whereHas('user', function ($q) use ($request) {
+                $q->where('nickname', 'LIKE', '%' . $request->input('nickname') . '%');
+            });
+        }
 
-        $transactions = $query->orderBy('transaction_datetime', 'desc')->paginate(10);
+
+        $transactions = $query->with(['user'])
+            ->orderBy('transaction_datetime', 'desc')
+            ->paginate(10);
 
         return response()->json([
             'data' => TransactionResource::collection($transactions),

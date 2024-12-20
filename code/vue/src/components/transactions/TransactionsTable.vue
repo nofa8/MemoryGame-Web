@@ -16,9 +16,23 @@ function toggleDetails(id) {
 const transactionsStore = useTransactionStore()
 const filterType = ref('')
 
-const applyFilter = () => {
-  transactionsStore.fetchTransactions(1, filterType.value) // Passa o tipo como parâmetro
-}
+const applyFilters = () => {
+    const filters = {
+        ...(user.value && { nickname: user.value }),
+        ...(filterType.value && { type: filterType.value }),
+    };
+
+    Object.keys(filters).forEach(key =>
+        filters[key] === '' && delete filters[key]
+    );
+
+    transactionsStore.fetchTransactions(1, filters);
+};
+
+const resetFilters = () => {
+    user.value = '';
+    applyFilters();
+};
 
 onMounted(() => {
   transactionsStore.fetchTransactions(1)
@@ -31,55 +45,54 @@ onMounted(() => {
     <div class="relative">
       <label for="filter" class="block text-sm font-medium text-gray-700 mb-1"></label>
       <div class="relative">
-        <select
-          v-model="filterType"
-          @change="applyFilter"
-          class="appearance-none w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm transition-all duration-300 hover:border-blue-400 pr-8"
-        >
+        <select v-model="filterType"
+          class="appearance-none w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm transition-all duration-300 hover:border-blue-400 pr-8">
           <option value="" class="bg-white text-gray-900">All Transactions</option>
           <option value="B" class="bg-white text-gray-900">BONUS Transactions</option>
           <option value="I" class="bg-white text-gray-900">INTERNAL Transactions</option>
           <option value="P" class="bg-white text-gray-900">PURCHASE Transactions</option>
         </select>
         <!-- Custom dropdown arrow -->
-        <div
-          class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"
-        >
+        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
           <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
             <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
           </svg>
         </div>
       </div>
+
     </div>
+    <div>
+      <input v-if="storeAuth.user?.type == 'A'" type="text" v-model="user" placeholder="Nickname"
+        class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+    </div>
+    <div class="flex space-x-2 col-span-1 md:col-span-5">
+                <button @click="applyFilters"
+                    class="w-full md:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    Apply Filters
+                </button>
+                <button @click="resetFilters"
+                    class="w-full md:w-auto px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                    Reset
+                </button>
+            </div>
 
     <!-- Purchase Button -->
-    <button
-      @click="$router.push('/purchase')"
-      v-if="storeAuth.user?.type != 'A'"
-      class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-300 shadow-md hover:shadow-lg"
-    >
+    <button @click="$router.push('/purchase')" v-if="storeAuth.user?.type != 'A'"
+      class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-300 shadow-md hover:shadow-lg">
       Buy Coins
     </button>
   </div>
 
   <div class="container mx-auto p-4">
     <div class="overflow-x-auto rounded-lg shadow-md">
-      <div
-        v-for="transaction in transactionsStore.transactions"
-        :key="transaction.id"
-        :class="{
-          'bg-blue-100': transaction.type === 'B', // Bônus: Azul claro
-          'bg-yellow-100': transaction.type === 'P', // Compras: Amarelo claro
-          'bg-orange-100': transaction.type === 'I', // Interno: Laranja claro
-          'bg-green-100': transaction.euros > 0, // Earnings positivos: Verde claro
-          'bg-purple-100': transaction.euros < 0 // Spendings negativos: Roxo claro
-        }"
-        class="shadow-md rounded-lg p-4 mb-2 flex justify-between items-center"
-      >
-        <button
-          @click="toggleDetails(transaction.id)"
-          class="w-full text-left flex items-center justify-between"
-        >
+      <div v-for="transaction in transactionsStore.transactions" :key="transaction.id" :class="{
+        'bg-blue-100': transaction.type === 'B', // Bônus: Azul claro
+        'bg-yellow-100': transaction.type === 'P', // Compras: Amarelo claro
+        'bg-orange-100': transaction.type === 'I', // Interno: Laranja claro
+        'bg-green-100': transaction.euros > 0, // Earnings positivos: Verde claro
+        'bg-purple-100': transaction.euros < 0 // Spendings negativos: Roxo claro
+      }" class="shadow-md rounded-lg p-4 mb-2 flex justify-between items-center">
+        <button @click="toggleDetails(transaction.id)" class="w-full text-left flex items-center justify-between">
           <div>
             <!-- Informações principais da transação -->
             <p :class="{ 'font-bold': transaction.transaction_datetime }">
@@ -91,16 +104,13 @@ onMounted(() => {
             </p>
             <p v-if="transaction.game_id != null">GAME ID: {{ transaction.game_id }}</p>
 
-            <p v-if="storeAuth.userType == 'A'">USER ID : {{ transaction.user_id }}</p>
+            <p v-if="storeAuth.userType == 'A'">NICKNAME : {{ transaction.nickname }}</p>
 
-            <p
-              v-if="expandedTransactionId === transaction.id"
-              :class="{
-                'text-blue-500': transaction.type === 'B',
-                'text-yellow-500': transaction.type === 'P',
-                'text-orange-500': transaction.type === 'I'
-              }"
-            >
+            <p v-if="expandedTransactionId === transaction.id" :class="{
+              'text-blue-500': transaction.type === 'B',
+              'text-yellow-500': transaction.type === 'P',
+              'text-orange-500': transaction.type === 'I'
+            }">
               {{
                 transaction.type === 'B'
                   ? 'Bonus'
@@ -111,43 +121,30 @@ onMounted(() => {
                       : ''
               }}
             </p>
-            <p
-              v-if="transaction.euros != null"
-              :class="{
-                'text-green-500': transaction.euros > 0,
-                'text-purple-500': transaction.euros < 0
-              }"
-            >
+            <p v-if="transaction.euros != null" :class="{
+              'text-green-500': transaction.euros > 0,
+              'text-purple-500': transaction.euros < 0
+            }">
               Euros: {{ transaction.euros }}
             </p>
-            <p
-              :class="{
-                'text-green-500': transaction.brain_coins > 1,
-                'text-purple-500': transaction.brain_coins < 1
-              }"
-            >
+            <p :class="{
+              'text-green-500': transaction.brain_coins > 1,
+              'text-purple-500': transaction.brain_coins < 1
+            }">
               Brain Coins: {{ transaction.brain_coins }}
             </p>
           </div>
 
-          <img
-            :src="
-              transaction.type === 'B'
-                ? BonusIcon
-                : transaction.type === 'P'
-                  ? PurchaseIcon
-                  : InternalIcon
-            "
-            alt="Transaction Icon"
-            class="w-9 h-9"
-          />
+          <img :src="transaction.type === 'B'
+            ? BonusIcon
+            : transaction.type === 'P'
+              ? PurchaseIcon
+              : InternalIcon
+            " alt="Transaction Icon" class="w-9 h-9" />
         </button>
 
         <!-- Detalhes adicionais da transação -->
-        <div
-          v-if="expandedTransactionId === transaction.id && transaction.type == 'P'"
-          class="p-4 border-t mt-2"
-        >
+        <div v-if="expandedTransactionId === transaction.id && transaction.type == 'P'" class="p-4 border-t mt-2">
           <p v-if="transaction.payment_type">Payment type: {{ transaction.payment_type }}</p>
           <p v-if="transaction.payment_reference">
             Payment Reference: {{ transaction.payment_reference }}
@@ -157,11 +154,8 @@ onMounted(() => {
     </div>
 
     <div class="flex justify-between mt-4">
-      <button
-        class="px-4 py-2 bg-gray-200 text-gray-700 rounded"
-        :disabled="transactionsStore.currentPage === 1"
-        @click="transactionsStore.fetchTransactions(transactionsStore.currentPage - 1)"
-      >
+      <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded" :disabled="transactionsStore.currentPage === 1"
+        @click="transactionsStore.fetchTransactions(transactionsStore.currentPage - 1)">
         Previous
       </button>
 
@@ -169,11 +163,9 @@ onMounted(() => {
         Page {{ transactionsStore.currentPage }} of {{ transactionsStore.lastPage }}
       </span>
 
-      <button
-        class="px-4 py-2 bg-gray-200 text-gray-700 rounded"
+      <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded"
         :disabled="transactionsStore.currentPage === transactionsStore.lastPage"
-        @click="transactionsStore.fetchTransactions(transactionsStore.currentPage + 1)"
-      >
+        @click="transactionsStore.fetchTransactions(transactionsStore.currentPage + 1)">
         Next
       </button>
     </div>

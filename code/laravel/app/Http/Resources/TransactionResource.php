@@ -14,6 +14,7 @@ class TransactionResource extends JsonResource
             'type' => $this->type,
             'transaction_datetime' => $this->transaction_datetime,
             'user_id' => $this->user_id,
+            'nickname' => $this->user != null ? $this->user->nickname : 'Deleted User',
             'game_id' => $this->game_id,
             'euros' => $this->euros,
             'payment_type' => $this->payment_type,
