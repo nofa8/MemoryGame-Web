@@ -4,7 +4,6 @@ import { useAuthStore } from '@/stores/auth';
 import ProfileInfo from './ProfileInfo.vue';
 import AdminCreate from './AdminCreate.vue';
 import router from '@/router';
-import axios from 'axios';
 
 const authStore = useAuthStore();
 const includeDeleted = ref('');

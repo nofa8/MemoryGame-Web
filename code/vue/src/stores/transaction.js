@@ -14,21 +14,26 @@ export const useTransactionStore = defineStore('transaction', () => {
 
   const storeError = useErrorStore()
 
-  const fetchTransactions = async (page = 1, filters = {}) => {
+  const fetchTransactions = async (page = 1, type = null) => {
+    storeError.resetMessages()
     try {
-        const params = { page, ...filters };
+      const params = { page }
+      if (type) {
+        params.type = type
+      }
 
-        const response = await axios.get('transactions', { params });
+      const response = await axios.get('transactions', { params })
 
-        transactions.value = response.data.data;
-        currentPage.value = response.data.meta.current_page;
-        lastPage.value = response.data.meta.last_page;
-        total.value = response.data.meta.total;
-        perPage.value = response.data.meta.per_page;
+      transactions.value = response.data.data
+      currentPage.value = response.data.meta.current_page
+      lastPage.value = response.data.meta.last_page
+      total.value = response.data.meta.total
+      perPage.value = response.data.meta.per_page
     } catch (error) {
-        console.error('Failed to fetch transactions:', error);
+      console.error('Failed to fetch transactions:', error)
+      storeError.setErrorMessages(error.message)
     }
-};
+  }
 
   const formatTime = (totalTime) => {
     const minutes = Math.floor(totalTime / 60)
