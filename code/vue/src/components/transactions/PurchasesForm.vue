@@ -68,9 +68,10 @@ const submitTransaction = async () => {
       variable.value =
         response.data.data.user_total_brain_coins - authStore.user.brain_coins_balance
       authStore.user.brain_coins_balance = response.data.data.user_total_brain_coins
+      changedTAES(brainCoins.value)
     })
     successMessage.value = 'Purchase made successfully!'
-    changedTAES(brainCoins.value)
+    
   } catch (error) {
     if (error.response && error.response.status === 422) {
       errorMessage.value =
