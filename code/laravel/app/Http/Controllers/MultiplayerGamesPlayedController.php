@@ -184,6 +184,7 @@ class MultiplayerGamesPlayedController extends Controller
             $multi->save();
             if ($validated['won']) {
                 $game->total_turns_winner = $validated['turns'];
+                $game->winner_user_id = $validated['user_id'];
                 $user->brain_coins_balance += 7;
 
                 $transaction = new Transaction([
@@ -198,7 +199,7 @@ class MultiplayerGamesPlayedController extends Controller
             }
         }
         $game->save();
-        return response()->json(['success' => 'Multiplayer game updated successfully', 'Game' => new GameResource($game)]);
+        return response()->json(['success' => 'Multiplayer game updated successfully', 'Game' => ($game)]);
     }
 
 

@@ -4,6 +4,8 @@ import { useAuthStore } from '@/stores/auth';
 import ProfileInfo from './ProfileInfo.vue';
 import AdminCreate from './AdminCreate.vue';
 import router from '@/router';
+import avatarNoneAssetURL from '@/assets/avatar-none.png'
+
 
 const authStore = useAuthStore();
 const includeDeleted = ref('');
@@ -73,7 +75,7 @@ const getPhotoUrl = (photoFileName) => {
     if (photoFileName) {
         return `http://${url}/storage/photos/${photoFileName}`;
     }
-    return `http://${url}/storage/photos/anonymous.jpg`;
+    return avatarNoneAssetURL;
 };
 
 // Handle user deletion

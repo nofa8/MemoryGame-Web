@@ -25,6 +25,33 @@ io.on("connection", (socket) => {
             socket.join("user_" + user.id);
         }
     });
+
+    //////////// Users Deleted and/or Blocked while logged ////////////////////
+    socket.on("blocked", (user) => {
+        const destinationRoomName = "user_" + user.id;
+        if (io.sockets.adapter.rooms.get(destinationRoomName)) {
+            const payload = {
+                user: user,
+                message: "You have been blocked, and can't log in or access!",
+            };
+            io.to(destinationRoomName).emit("blocked", payload);
+        }
+    });
+
+    socket.on("deleted", (user) => {
+        const destinationRoomName = "user_" + user.id;
+        if (io.sockets.adapter.rooms.get(destinationRoomName)) {
+            const payload = {
+                user: user,
+                message: "You have been removed, and can't log in or access!",
+            };
+            io.to(destinationRoomName).emit("deleted", payload);
+        }
+    });
+
+
+    ////////////////////////////////
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     socket.on("loginTAES", (user) => {
         try {
@@ -281,7 +308,7 @@ io.on("connection", (socket) => {
         // Also, notify them that the game has ended
         // io.to(roomName).emit("gameChanged", game);
         if (gameEngine.gameEnded(game)) {
-            console.log("Game ended: " + game);
+            // console.log("Game ended: " + game);
             io.to(roomName).emit("gameEnded", game);
         }
     });
@@ -290,8 +317,17 @@ io.on("connection", (socket) => {
             return;
         }
         const roomName = "game_" + gameId;
+        if (!io.sockets.adapter.rooms.get(roomName)){
+            if (callback) {
+                callback({
+                    errorCode: 1,
+                    errorMessage: `Room doesn't exist!`,
+                });
+            }
+        }
         // load game state from the game data stored directly on the room object:
         const game = socket.adapter.rooms.get(roomName).game;
+        
         const quitResult = gameEngine.quit(game, socket.id);
         if (quitResult !== true) {
             if (callback) {

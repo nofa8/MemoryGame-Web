@@ -10,7 +10,17 @@ import { useStopwatch } from 'vue-timer-hook'
 
 const storeMultiGames = useMultiplayerGamesStore()
 const storeAuth = useAuthStore()
+const alertDialog = inject('alertDialog')
+
+const props = defineProps({
+  game: {
+    type: Object,
+    required: true
+  }
+})
+
 const autoStart = ref(false)
+
 const stopwatch = useStopwatch(autoStart)
 
 const showSeconds = computed(() => {
@@ -20,15 +30,6 @@ const showSeconds = computed(() => {
 const interrupt = computed(() => {
   return stopwatch.seconds.value >= 20
 })
-
-const props = defineProps({
-  game: {
-    type: Object,
-    required: true
-  }
-})
-
-const alertDialog = inject('alertDialog')
 
 const opponentName = computed(() => {
   return storeMultiGames.playerNumberOfCurrentUser(props.game) === 1

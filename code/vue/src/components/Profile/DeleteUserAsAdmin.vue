@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import axios from 'axios';
 import { useAuthStore } from '@/stores/auth';
 
-//const authStore = useAuthStore()
+const authStore = useAuthStore()
 
 const props = defineProps({
     user: { type: Object, required: true }
@@ -34,6 +34,7 @@ const handleDeleteAccount = async () => {
             emit('userDeleted', props.user.id);
             emit('accountDeleted', props.user); // Notify parent about the deletion
             emit('hidedeleteForm'); // Hide the delete form
+            authStore.deleted(props.user)
         }
     } catch (error) {
         errorMessage.value = error.response?.data?.message || 'Failed to delete the account.';

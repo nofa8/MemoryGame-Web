@@ -63,7 +63,8 @@ export const useMultiplayerGamesStore = defineStore('multiPlayerGames', () => {
       if (webSocketServerResponseHasError(response)) {
         return
       }
-      games.value = response
+      const newGames = response.filter( g => !games.value.find(game=>game.id == g.id))
+      newGames.forEach (g=>games.value.push(g))
     })
   }
   const play = (game, idx) => {
@@ -118,6 +119,7 @@ export const useMultiplayerGamesStore = defineStore('multiPlayerGames', () => {
 
     const currentUser = playerNumberOfCurrentUser(game)
     if (currentUser === 1 || currentUser == 2) {
+      // console.log(game.id)
       const APIresponse = await axios.patch('multiplayer-games/' + game.id, {
         turns: game.turns[currentUser],
         status: game.status,
@@ -126,7 +128,7 @@ export const useMultiplayerGamesStore = defineStore('multiPlayerGames', () => {
         user_id: storeAuth.userId
       })
 
-      const updatedGameOnDB = APIresponse.data.data
+      const updatedGameOnDB = APIresponse.data
       // console.log('Game has ended and updated on the database: ', updatedGameOnDB)
       if (currentUser == game.gameStatus) {
         storeAuth.user.brain_coins_balance += 7
@@ -153,7 +155,7 @@ export const useMultiplayerGamesStore = defineStore('multiPlayerGames', () => {
       description: `Game #${game.id} was interrupted because your opponent has gone offline!`,
       variant: 'destructive'
     })
-    const APIresponse = await axios.patch('games/' + game.id, {
+    const APIresponse = await axios.put('games/' + game.id, {
       status: 'I',
       winner_id:
         game.gameStatus === 1 ? game.player1_id : game.gameStatus === 2 ? game.player2_id : null

@@ -13,8 +13,8 @@ const app = createApp(App)
 
 const apiDomain = import.meta.env.VITE_API_DOMAIN
 const wsConnection = import.meta.env.VITE_WS_CONNECTION
-console.log('api domain', apiDomain)
-console.log('ws connection', wsConnection)
+// console.log('api domain', apiDomain)
+// console.log('ws connection', wsConnection)
 
 app.provide('socket', io(wsConnection))
 app.provide('serverBaseUrl', apiDomain)

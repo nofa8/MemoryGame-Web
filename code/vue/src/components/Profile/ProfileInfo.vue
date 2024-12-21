@@ -29,6 +29,7 @@ const blockAccount = async () => {
 
     if (response.status === 200) {
       props.user.blocked = response.data.user.blocked // Update blocked status
+      authStore.block(props.user)
     }
   } catch (err) {
     console.error('Failed to toggle the account status:', err)

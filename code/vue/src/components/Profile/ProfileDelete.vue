@@ -28,7 +28,7 @@ const handleDelete = () => {
             },
         })
         .then(() => {
-            console.log('Profile deleted successfully.');
+            // console.log('Profile deleted successfully.');
             // Optionally redirect or show a success message
         })
         .catch((error) => {

@@ -524,8 +524,11 @@ class GameController extends Controller
             return response()->json(['error' => 'When a game ends, start time is required'], 400);
         }
 
-        $game->began_at = Carbon::createFromFormat('d/m/Y, H:i:s', $validated['start_time']);
-        $game->save();
+        if (array_key_exists('start_time', $validated)) {
+            $game->began_at = Carbon::createFromFormat('d/m/Y, H:i:s', $validated['start_time']);
+            $game->save();
+        }
+
         $result =  $this->updateSinglePlayerGame($game, $validated);
 
 

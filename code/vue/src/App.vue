@@ -35,8 +35,9 @@ const inputDialog = useTemplateRef('input-dialog')
 provide('inputDialog', inputDialog)
 
 const logoutConfirmed = () => {
-  storeAuth.logout()
   router.push({ name: 'singlePlayerGames' })
+  storeAuth.logout()
+  
 }
 
 const logout = () => {

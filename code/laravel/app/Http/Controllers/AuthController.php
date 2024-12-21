@@ -137,6 +137,11 @@ class AuthController extends Controller
         if (!Auth::attempt($credentials)) {
             return response()->json(['message' => 'Credentials wrong'], 401);
         }
+        if ($request->user()->blocked == 1) {
+            return response()->json([
+                'message' => 'User Blocked'
+            ], 403);
+        }
         $token = $request->user()->createToken('authToken', ['*'], now()->addHours(2))->plainTextToken;
         return response()->json(['token' => $token]);
     }

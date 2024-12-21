@@ -5,6 +5,7 @@ import { useErrorStore } from '@/stores/error'
 
 import avatarNoneAssetURL from '@/assets/avatar-none.png'
 import router from '@/router'
+import { toast } from '@/components/ui/toast'
 
 export const useAuthStore = defineStore('auth', () => {
   const storeError = useErrorStore()
@@ -185,6 +186,15 @@ export const useAuthStore = defineStore('auth', () => {
     return false
   }
 
+  const block = (user)=> {
+      socket.emit('blocked', user)
+
+  }
+
+  const deleted = (user)=> {
+    socket.emit('deleted', user)
+  }
+
   const setUser = (userData) => {
     user.value = userData
   }
@@ -205,6 +215,29 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+
+  socket.on('blocked', (payload) => {
+    if (user.value.id === payload.user.id) {
+      toast({
+        title: 'Problem Ocurred',
+        description: payload.message
+      })
+      logout()
+      router.push({ name: 'singlePlayerGames' })
+    }
+  })
+
+  socket.on('deleted', (payload) => {
+    if (user.value.id === payload.user.id) {
+      toast({
+        title: 'Problem Ocurred',
+        description: payload.message
+      })
+      clearUser()
+      router.push({ name: 'singlePlayerGames' })
+    }
+  })
+
   return {
     user,
     userId,
@@ -221,6 +254,8 @@ export const useAuthStore = defineStore('auth', () => {
     getFirstLastName,
     setUser,
     fetchUsers,
+    block,
+    deleted,
     users,
     currentPage,
     lastPage,
